@@ -1,0 +1,24 @@
+<div *ngIf="!data.slide">
+    <h3 mat-dialog-title>长按保存/分享</h3>
+    <mat-dialog-content>
+
+        <img style="width: 100%;" [src]="data.srcData">
+
+    </mat-dialog-content>
+    <mat-dialog-actions>
+        <button mat-button mat-dialog-close type="button"></button>
+        <span class="fill-remaining-space"></span>
+        <button mat-raised-button color="primary" mat-dialog-close type="button">关闭</button>
+    </mat-dialog-actions>
+
+    </div>
+
+<div *ngIf="data.slide">
+    <h3 mat-dialog-title>滑动验证</h3>
+    <mat-dialog-content>
+        <div style="display: flex; align-items:center;  justify-content: center; margin-top: 160px;">
+            <app-slide-control (successMatch)="successMatch($event)" [showOnce]="true" style="text-align:-webkit-center">
+            </app-slide-control>
+        </div>
+    </mat-dialog-content>
+</div>

@@ -1,0 +1,73 @@
+<app-master-head [title]="title" [showProgress]="showProgress"
+    style="position: fixed; top: 0; width:100% ;z-index: 100 "></app-master-head>
+
+
+<div class="my-body">
+    <div style="height: 60px"></div>
+
+    <div class="my-card">
+        <form [formGroup]="questionnaireForm" (ngSubmit)="onQuestionnaireFormSubmit()">
+
+            <label for="headpic">
+                <img style="width: 100%;
+                            object-fit: cover;" [src]="headPicSrc" [style.height]="headWidth"
+                    onerror="this.src='assets/images/default-picture.png'" title="题图">
+            </label>
+            <input id="headpic" type="file" accept="image/*" hidden (change)="headPic($event)">
+            <input hidden formControlName="questionnairePic" required>
+
+            <mat-form-field floatLabel="auto" class="full-width">
+                <input matInput placeholder="标题" formControlName="questionnaireName" required>
+                <mat-error *ngIf="questionnaireName.invalid">
+                    字数6-50位
+                </mat-error>
+            </mat-form-field>
+
+            <mat-form-field style="width:50%" floatLabel="auto">
+                <input matInput placeholder="结束日期" readonly (click)="expiredPicker.open()"
+                    [matDatepicker]="expiredPicker" formControlName="questionnaireExpiredDate" required>
+                <mat-datepicker-toggle matSuffix [for]="expiredPicker"></mat-datepicker-toggle>
+                <mat-datepicker touchUi #expiredPicker disabled="false"></mat-datepicker>
+                <mat-error *ngIf="questionnaireExpiredDate.invalid">
+                    日期格式：2019-09-10
+                </mat-error>
+            </mat-form-field>
+            <mat-form-field style="width:calc(50% - 16px);margin-left: 16px;" floatLabel="auto">
+                <input type="time" matInput placeholder="时间" formControlName="questionnaireExpiredTime" required>
+                <mat-error *ngIf="questionnaireExpiredTime.invalid">
+                    时间格式：20:00
+                </mat-error>
+            </mat-form-field>
+
+            <mat-form-field floatLabel="auto" class="full-width">
+                <textarea matInput placeholder="开始语" formControlName="questionnairePre" required> </textarea>
+                <mat-error *ngIf="questionnairePre.invalid">
+                    字数1-1000位
+                </mat-error>
+            </mat-form-field>
+            <mat-form-field floatLabel="auto" class="full-width">
+                <textarea matInput placeholder="结束语" formControlName="questionnaireAfter" required> </textarea>
+                <mat-error *ngIf="questionnaireAfter.invalid">
+                    字数1-1000位
+                </mat-error>
+            </mat-form-field>
+
+            <div style="position: fixed;left:0px ; bottom: 16px ; width: 100%; z-index: 100;">
+                <div style="margin:0 auto;max-width: 800px; display: flex;justify-content:center;">     
+                    <button type="button" mat-button color="primary"  *ngIf="questionnaireType === 1" [routerLink]="['/'+urlDefine.myQuesttionnaires]">返回</button>               
+                    <button type="button" mat-button color="primary"  *ngIf="questionnaireType !== 1" [routerLink]="['/'+urlDefine.myGinfos]">返回</button>               
+                    <button type="submit" [disabled]="!questionnaireForm.valid"  mat-raised-button color="primary">保存</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+
+    <div style="display: flex; align-items:center;" class="my-right-left-16 my-top-bottom-8">
+        <span class="fill-remaining-space">表单定制</span>
+        <button mat-mini-fab (click) = "showAddDialog()" color="accent"> 
+                <mat-icon>add</mat-icon>
+        </button>
+    </div>
+    <app-dynamic-form [questions]="questions" [editTag]="true"></app-dynamic-form>
+</div>

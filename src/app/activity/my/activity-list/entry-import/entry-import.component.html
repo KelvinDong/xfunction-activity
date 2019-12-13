@@ -1,0 +1,18 @@
+<h3 mat-dialog-title>推广</h3>
+
+<mat-dialog-content>
+
+请先点击<button mat-button (click)="dlTemple()">下载</button>导入模板，模板因活动而异。
+
+
+<input   type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" 
+placeholder="导入"  (change)="change($event)" required>
+
+
+</mat-dialog-content>
+
+<mat-dialog-actions>
+    <button mat-button mat-dialog-close>关闭</button>
+    <span class="fill-remaining-space"></span>
+    <button mat-raised-button color="primary" (click)="import()" [disabled]="!file">确认</button>
+</mat-dialog-actions>

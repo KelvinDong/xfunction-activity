@@ -1,0 +1,15 @@
+<mat-action-list>
+    <button mat-list-item *ngIf="!data.para.expired" (click)="openLink(1,$event)"> 编辑 </button>
+    <button mat-list-item (click)="openLink(2,$event)"> 查看 </button>
+    <button *ngIf="data.para.activityOrderDict <= 0 
+        && data.para.activityPic!=null  && 
+        data.para.tickets.length > 0 && 
+        !data.para.expired" mat-list-item (click)="openLink(3,$event)"> 公开 </button>
+    <button *ngIf="data.para.activityOrderDict > 0 " mat-list-item (click)="openLink(4,$event)"> 私有 </button>
+    <button mat-list-item (click)="openLink(5,$event)"> 报名清单 </button>
+    <button mat-list-item (click)="openLink(6,$event)"> 活动抽奖 </button>
+    <button mat-list-item (click)="openLink(8,$event)"> 签到:扫描“个人签到码” </button>
+    <button mat-list-item (click)="openLink(7,$event)"> 签到:下载“活动现场码” </button>
+    <button mat-list-item (click)="openLink(10,$event)"> 签到墙 </button>
+    <button mat-list-item (click)="openLink(9,$event)"> 推广 </button>
+</mat-action-list>

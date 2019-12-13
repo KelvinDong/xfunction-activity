@@ -1,0 +1,15 @@
+<form (ngSubmit)="onSubmit()" [formGroup]="form">
+    <div class="my-card">
+        <div *ngFor="let question of questions">
+            <app-control-component (moveControlUp)="moveControlUp($event)" (moveControlDown)="moveControlDown($event)"
+                (delMe)="removeControl($event)" [question]="question"  [editTag]="editTag" [form]="form">
+            </app-control-component>
+        </div>
+
+        <div *ngIf="!editTag" class="my-top-bottom-8">
+            <button mat-button color="primary" type="button" (click)="ngOnInit()">重置</button>
+            <button mat-raised-button color="primary"  type="submit" style="float: right ;margin-right: 16px;"
+                [disabled]="!form.valid">提交</button>
+        </div>
+    </div>
+</form>

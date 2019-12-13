@@ -1,0 +1,14 @@
+<h3 mat-dialog-title>评论回复</h3>
+<mat-dialog-content>
+
+    <mat-form-field class="full-width" floatLabel="auto">
+        <textarea matInput  placeholder="请输入" [formControl]="commentReply"
+             required></textarea>
+    </mat-form-field>
+
+</mat-dialog-content>
+<mat-dialog-actions>
+    <button mat-button mat-dialog-close type="button">取消</button>
+    <span class="fill-remaining-space"></span>
+    <button mat-raised-button color="primary" [disabled]="!commentReply.valid" (click)="submit()">确认</button>
+</mat-dialog-actions>

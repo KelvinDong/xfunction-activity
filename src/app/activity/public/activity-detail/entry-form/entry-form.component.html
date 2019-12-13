@@ -1,0 +1,18 @@
+<h3 mat-dialog-title>选择票种{{ticket.ticketName}}报名</h3>
+<mat-dialog-content>
+    
+    <app-dynamic-form [questions]="questions" [editTag]="false" (formSubmit)="entry($event)">
+
+    </app-dynamic-form>
+    <div>
+        <p>请如实填写报名信息，并注意活动的时间和地址。</p>
+        <P>活动报名允许在活动前取消，为确保主办方合理配置活动资源，请在活动开始2个小时前取消。</P>
+        <P>如果报名并没有实际参加活动，平台视为合作态度欠佳，将适度限制平台功能使用。你可以通过以下方便提升自己的合作指数</P>
+        <ol>
+                <li>积极对活动进行有效的评价。</li>
+                <li>积极分享活动信息。</li>
+                <li>完成活动签到。</li>
+        </ol>
+        
+    </div>
+</mat-dialog-content>

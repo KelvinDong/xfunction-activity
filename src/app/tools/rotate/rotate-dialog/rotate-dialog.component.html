@@ -1,0 +1,37 @@
+<div *ngIf="data.award">
+    <h3 mat-dialog-title>抽奖结果</h3>
+    <mat-dialog-content>
+
+
+        <div>祝贺,【{{data.award}}】是你的了</div>
+
+    </mat-dialog-content>
+    <mat-dialog-actions>
+        <span class="fill-remaining-space"></span>
+        <button mat-raised-button color="primary" mat-dialog-close>关闭</button>
+    </mat-dialog-actions>
+</div>
+<div *ngIf="!data.award">
+    <h3 mat-dialog-title>设置</h3>
+    <mat-dialog-content>
+        <form (ngSubmit)="formSubmit()" [formGroup]="settingFrom" #formCont="ngForm">
+            <div style="display: flex;" class="my-top-bottom-8">
+                <div style="width: 60%;" formArrayName="names">
+                    <mat-form-field style="width:100%" floatLabel="auto" *ngFor="let item of names;let i=index">
+                        <input matInput [formControlName]="i" placeholder="奖品{{i+1}}名称(小于8字符)">
+                    </mat-form-field>
+                </div>
+                <div style="width: 40%;" formArrayName="weights"  class="my-right-left-10">
+                        <mat-form-field style="width:100%" floatLabel="auto" *ngFor="let item of weights;let i=index">
+                            <input matInput [formControlName]="i" placeholder="权重(0-999)">
+                        </mat-form-field>
+                    </div>
+            </div>
+        </form>
+    </mat-dialog-content>
+    <mat-dialog-actions>
+        <button mat-button color="primary" mat-dialog-close>关闭</button>
+        <span class="fill-remaining-space">名称为空，则忽略</span>
+        <button mat-raised-button color="primary" [disabled]="!settingFrom.valid" (click)="formSubmit()">确认</button>
+    </mat-dialog-actions>
+</div>

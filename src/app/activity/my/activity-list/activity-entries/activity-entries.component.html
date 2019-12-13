@@ -1,0 +1,74 @@
+<app-master-head [title]="title" [showProgress]="showProgress"
+    style="position: fixed; top: 0; width:100% ;z-index: 100 "></app-master-head>
+<mat-toolbar color="primary" style="position: fixed; top: 56px; width:100% ;font-size: 14px;z-index: 100 ">
+    <span style="flex: 1 1 auto;"></span>
+    <form [formGroup]="queryForm">
+        <mat-form-field floatLabel="never" style="width:120px; ">
+            <input matInput placeholder="输入条件" formControlName="queryStr">
+        </mat-form-field>
+        <mat-form-field floatLabel="never" style="width:60px; ">
+            <mat-select placeholder="票种?" formControlName="ticketId">
+                <mat-option value="">全部</mat-option>
+                <mat-option *ngFor="let ticket of tickets" [value]="ticket.ticketId">{{ticket.ticketName}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+        <mat-form-field floatLabel="never" style="width:60px">
+            <mat-select placeholder="签到?" formControlName="checkin">
+                <mat-option value="">全部</mat-option>
+                <mat-option value=true>已签到</mat-option>
+                <mat-option value=false>未签到</mat-option>
+            </mat-select>
+        </mat-form-field>
+        <mat-form-field floatLabel="never" style="width:60px">
+            <mat-select placeholder="取消?" formControlName="cancel">
+                <mat-option value="">全部</mat-option>
+                <mat-option value=false>未取消</mat-option>
+                <mat-option value=true>取消</mat-option>
+            </mat-select>
+        </mat-form-field>
+        <button mat-icon-button (click)="queryChange()" [disabled]="showProgress">
+            <fa-icon [icon]="faSearch" size="lg"></fa-icon>
+        </button>
+    </form>
+</mat-toolbar>
+<div class="my-body" style="border: 0px solid red" (scroll)="scrollBottom($event)">
+    <div style="height: 112px"></div>
+    <mat-grid-list cols="3" rowHeight="80px">
+        <mat-grid-tile (click)="staticAction(static.action)" *ngFor="let static of statics" [colspan]="static.cols"
+            [rowspan]="static.rows" [style.background]="static.color">
+            {{static.text}}
+        </mat-grid-tile>
+    </mat-grid-list>
+
+    <mat-accordion>
+        <mat-expansion-panel *ngFor="let entry of entries" style="margin:0px 0px">
+            <mat-expansion-panel-header>
+                <div style="display: flex; align-items: center; width: 100%; font-size: 14px;" class="my-right-left-10">
+                    <span class="my-right-left-10">{{entry.entryShowName}}</span>
+                    <span class="my-right-left-10">{{entry.ticketName}}</span>
+                    <span class="my-right-left-10">{{entry.entryCreate | myDate:'MM-dd HH:mm'}}</span>
+                    <span class="fill-remaining-space"></span>                  
+                    <mat-icon color="warn" *ngIf="entry.cancel">mood_bad</mat-icon>
+                    <mat-icon *ngIf="!entry.cancel">mood</mat-icon>
+                    <mat-icon *ngIf="entry.checkin">check_box</mat-icon>
+                    <mat-icon *ngIf="!entry.checkin">check_box_outline_blank</mat-icon>
+                </div>
+            </mat-expansion-panel-header>
+            <p *ngFor="let answer of entry.entryContentTrans , let i = index"> {{i+1}}、{{answer.q}} : {{answer.a}}</p>
+            <button mat-button color="primary" *ngIf="entry.cancel" (click)="toggleCancel(entry,$event)">
+                    恢复报名
+            </button>
+            <button mat-button color="primary" *ngIf="!entry.cancel" (click)="toggleCancel(entry,$event)">
+                    取消报名
+            </button>
+            <button mat-button color="primary"  *ngIf="!entry.checkin" (click)="sign(entry,$event)">
+                    代为签到
+            </button>
+        </mat-expansion-panel>
+    </mat-accordion>
+
+
+
+
+</div>

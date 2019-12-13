@@ -1,0 +1,40 @@
+<app-master-head [title]="title" [showProgress]="showProgress"
+    style="position: fixed; top: 0; width:100% ;z-index: 100 "></app-master-head>
+<div class="my-body">
+    <div style="margin-top: 56px"></div>
+    <div class="my-card">
+        <form [formGroup]="sponsorForm" (ngSubmit)="addUpdate()">
+            <div style="display: flex; align-items:center;">
+                <div>
+                    <label for="sponsorpic">
+                        <img class="my-circle-avatar" [src]="sponsorPicSrc"
+                            onerror="this.src='assets/images/default-head.png'" title="主办方">
+                    </label>
+                    <input id="sponsorpic" type="file" accept="image/*" hidden (change)="sponsorPic($event)" required>
+                    <input hidden formControlName="sponsorLogo">
+                </div>
+                <div style="margin-left: 32px; flex-grow: 1">
+                    <mat-form-field class="full-width" floatLabel="auto">
+                        <input matInput placeholder="主办方名称" formControlName="sponsorName" required>
+                        <mat-error *ngIf="sponsorName.invalid">
+                            2-45字符
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+            </div>
+            <mat-form-field class="full-width">
+                <textarea matInput placeholder="主办方介绍" cdkTextareaAutosize #autosize="cdkTextareaAutosize"
+                    cdkAutosizeMinRows="4" cdkAutosizeMaxRows="8" formControlName="sponsorIntro" required></textarea>
+                <mat-error *ngIf="sponsorIntro.invalid">
+                    格式：6-512个字符
+                </mat-error>
+            </mat-form-field>
+
+            <div class="my-top-bottom-8">
+                <button mat-flat-button type="button">&nbsp;</button>
+                <button type="submit" color="primary" mat-raised-button [disabled]="!sponsorForm.valid "
+                    style="float: right;right: 25px">确认</button>
+            </div>
+        </form>
+    </div>
+</div>

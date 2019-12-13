@@ -1,0 +1,3 @@
+::ng-deep .cdk-overlay-pane{
+    max-width: 330px!important ;
+}

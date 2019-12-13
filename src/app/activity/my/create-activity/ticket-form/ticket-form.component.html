@@ -1,0 +1,29 @@
+<h3 mat-dialog-title>编辑票种</h3>
+<form [formGroup]="ticketForm" (ngSubmit)="ticketSubmit()">
+    <mat-dialog-content>
+        <mat-form-field class="full-width">
+            <input matInput placeholder="票种名称" formControlName="ticketName" required>
+            <mat-error *ngIf="ticketName.invalid">
+                    格式：1-25个字符
+                </mat-error>
+        </mat-form-field>
+        <mat-form-field class="full-width">
+            <input matInput placeholder="票种数量" formControlName="ticketSum" required>
+            <mat-error *ngIf="ticketSum.invalid">
+                    格式：数字0-999
+                </mat-error>
+        </mat-form-field>
+        <mat-form-field class="full-width">
+            <textarea matInput placeholder="票种说明" formControlName="ticketRemark" required></textarea>
+            <mat-error *ngIf="ticketRemark.invalid">
+                    格式：6-125个字符
+                </mat-error>
+        </mat-form-field>
+
+    </mat-dialog-content>
+    <mat-dialog-actions>
+        <button mat-button mat-dialog-close type="button">取消</button>
+        <span class="fill-remaining-space"></span>
+        <button mat-raised-button color="primary" [disabled]="ticketForm.invalid" >确认</button>
+    </mat-dialog-actions>
+</form>

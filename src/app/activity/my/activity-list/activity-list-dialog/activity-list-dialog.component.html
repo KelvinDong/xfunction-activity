@@ -1,0 +1,68 @@
+<div [ngSwitch]="data.type">
+    <div *ngSwitchCase="8">
+        <h3 mat-dialog-title>签到:扫描个人签到码</h3>
+    </div>
+    <div *ngSwitchCase="7">
+        <h3 mat-dialog-title>长按保存“活动现场码”</h3>
+    </div>
+    <div *ngSwitchDefault>
+        <h3 mat-dialog-title>推广</h3>
+    </div>
+</div>
+<mat-dialog-content>
+
+    <div [ngSwitch]="data.type">
+        <div *ngSwitchCase="8">
+            <dl>
+                    <dt>个人签到码</dt>    
+                    <ol>                
+                        <li>“个人签到码”是系统在用户完成报名后提供给用户唯一二维码凭证；</li>
+                    </ol>
+                    <dt>主办方</dt>
+                    <ol>
+                        <li>主办方利用微信“扫一扫”功能，扫描用户出示的“个人签到码”，即可完成用户信息的验证完成签到；</li>
+                        <li>本页也会主动调起微信“扫一扫”功能；</li>
+                    </ol>
+                    <dt>用户</dt>
+                    <ol>
+                        <li>用户可以在“我的报名”中点击参加的活动；</li>
+                        <li>再选择“出示‘个人签到码’”；</li>
+                    </ol>
+            </dl>   
+        </div>
+        <div *ngSwitchCase="7">
+            <p>
+                “活动现场码”是签到的另一种补充方式,由系统为每一个活动生成的唯一二维码，视主办方选择是否提供。。
+            </p>
+            <ol>
+                <li>“活动现场码”由主办方在活动前下载并打印</li>
+                <li>活动现场，由已经报名用户利用微信扫一扫功能，扫描主办方提供的“活动现场码”，即可自主完成签到。</li>
+            </ol>
+            
+                    <qrcode 
+                        [qrdata]="webUrl + '/' + urlDefine.signByWx + '?id=' + data.activity.activityId + '&code=' + data.activity.activityToken + '&a=true'"
+                        [size]="178" [level]="'M'"></qrcode>
+            
+        </div>
+        <div *ngSwitchDefault>
+            <h4>一、活动海报推广方式</h4>
+            <p>“查看”活动，在页面下方点击“海报”生成活动海报，保存海报图片转发分享。</p>
+            <h4>二、二维码推广方式</h4>
+            <p>转发此二维码(长按保存)，即可查看本活动并报名。</p>
+            <qrcode
+                [qrdata]="webUrl + '/' + urlDefine.publicActivity + '/' +data.activity.activityId"
+                [size]="178" [level]="'M'"></qrcode>
+            <h4>三、短链接推广方式</h4>
+            <p style="word-break:break-all;">访问<a href="https://www.xfunction.cn/shortLink/">https://www.xfunction.cn/shortLink/</a></p>
+            <p style="word-break:break-all;">利用该系统将本活动地址
+            {{webUrl + '/' + urlDefine.publicActivity + '/' +data.activity.activityId}}
+            生成短链接/短网址。</p>
+            <h4>四、微信原生分享</h4>
+        </div>
+    </div>
+
+</mat-dialog-content>
+<mat-dialog-actions>
+    <span class="fill-remaining-space"></span>
+    <button mat-raised-button color="primary" mat-dialog-close>关闭</button>
+</mat-dialog-actions>

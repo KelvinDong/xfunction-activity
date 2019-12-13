@@ -1,0 +1,122 @@
+<app-master-head [title]="title" [showProgress]="showProgress"
+    style="position: fixed; top: 0; width:100% ;z-index: 100 "></app-master-head>
+<div class="my-body">
+    <div style="margin-top: 56px"></div>
+    <div class="my-card">
+        <mat-tab-group mat-align-tabs="center" [selectedIndex]="selectIndex">
+            <mat-tab>
+                <ng-template mat-tab-label>
+                    基本信息
+                </ng-template>
+                <form [formGroup]="resumeForm" (ngSubmit)="updateResume()">
+                    <mat-form-field class="full-width" floatLabel="auto">
+                        <input matInput placeholder="姓名" formControlName="name">
+                        <mat-error *ngIf="name.invalid">
+                            2-45字符
+                        </mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="full-width" floatLabel="auto">
+                        <mat-select placeholder="性别" formControlName="sex">
+                            <mat-option [value]="1">男</mat-option>
+                            <mat-option [value]="2">女</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    <mat-form-field class="full-width" floatLabel="auto">
+                        <input matInput placeholder="出生日期" formControlName="birth">
+                        <mat-error *ngIf="birth.invalid">
+                            1978-10-03
+                        </mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="full-width" floatLabel="auto">
+                        <input matInput placeholder="邮箱" formControlName="email">
+                        <mat-error *ngIf="email.invalid">
+                            @
+                        </mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="full-width" floatLabel="auto">
+                        <input matInput placeholder="手机" formControlName="mobile">
+                        <mat-error *ngIf="mobile.invalid">
+                            11位手机号
+                        </mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="full-width" floatLabel="auto">
+                        <input matInput placeholder="公司" formControlName="company">
+                        <mat-error *ngIf="company.invalid">
+                            2-45字符
+                        </mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="full-width" floatLabel="auto">
+                        <input matInput placeholder="职位" formControlName="position">
+                        <mat-error *ngIf="position.invalid">
+                            2-45字符
+                        </mat-error>
+                    </mat-form-field>
+                    <div>
+                            <ul>
+                                <li>基本信息主要用于自动填写表单使用</li>
+                            </ul>
+                        </div>
+                    <button color="primary" [disabled]="!resumeForm.valid" mat-raised-button
+                        style="float: right">确认</button>
+                </form>
+
+            </mat-tab>
+            <mat-tab>
+                <ng-template mat-tab-label>
+                    修改密码
+                </ng-template>
+                
+                <mat-form-field class="full-width" floatLabel="never">
+                    <input matInput placeholder="请输入新密码" [formControl]="changePwd" [type]="hide ? 'password' : 'text'"
+                        required>
+                    <mat-icon matSuffix (click)="hide = !hide">{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+                    <mat-error *ngIf="changePwd.invalid">
+                        大于6位,必须分别包含1个数字/小/大写字母/特殊字符
+                    </mat-error>
+                </mat-form-field>
+                <div style="display: flex;" *ngIf="userInfo && userInfo.userMobile">
+                    <mat-form-field class="full-width" floatLabel="auto">
+                        <input matInput placeholder="短信验证码" [formControl]="changeCode" required>
+                    </mat-form-field>
+                    <button mat-button color="primary" [disabled]="!changePwd.valid  || changeCountDown !== 0" (click)="sendChangeSMS()">
+                        {{changeCountDownLabel}}</button>
+                </div>
+                <div>
+                    <ul>
+                        <li>修改密码前，须先完成手机绑定</li>
+                    </ul>
+                </div>
+
+                <button *ngIf="userInfo && userInfo.userMobile" (click)="change()" color="primary"
+                    [disabled]="!changePwd.valid || !changeCode.valid " mat-raised-button
+                    style="float: right">确认</button>
+            </mat-tab>
+
+            <mat-tab>
+                <ng-template mat-tab-label>
+                    绑定手机
+                </ng-template>
+                <mat-form-field class="full-width" floatLabel="auto">
+                    <input matInput placeholder="绑定手机号" [formControl]="activeMobile" required>
+                </mat-form-field>
+                <div style="display: flex;">
+                    <mat-form-field class="full-width" floatLabel="auto">
+                        <input matInput placeholder="短信验证码" [formControl]="mobileCode" required>
+                    </mat-form-field>
+                    <button mat-button color="primary" [disabled]="!activeMobile.valid || countDown !== 0" (click)="sendSMS()">
+                        {{countDownLabel}}</button>
+                </div>
+                <div>
+                    <ul>
+                        <li>如果已经绑定，请不要重复绑定</li>
+                        <li>一个帐号仅能绑定一个手机号。</li>
+                        <li>同一个手机号不能绑定不同的帐号。</li>
+                        <li>绑定手机号主要服务身份验证，用于找回密码。</li>
+                    </ul>
+                </div>
+                <button (click)="active()" color="primary" [disabled]="!activeMobile.valid || !mobileCode.valid"
+                    mat-raised-button style="float: right">确认</button>
+            </mat-tab>
+        </mat-tab-group>
+    </div>
+</div>

@@ -1,0 +1,17 @@
+<h3 mat-dialog-title>活动评论</h3>
+<mat-dialog-content>
+
+    <mat-form-field class="full-width" floatLabel="auto" style="width:100%">
+        <textarea matInput  placeholder="请输入" [formControl]="commentContent"
+             required></textarea>
+        <mat-error *ngIf="!commentContent.valid">
+                    格式：6-500个字符
+        </mat-error>
+    </mat-form-field>
+
+</mat-dialog-content>
+<mat-dialog-actions>
+    <button mat-button color="primary" mat-dialog-close type="button">取消</button>
+    <span class="fill-remaining-space"></span>
+    <button mat-raised-button color="primary" [disabled]="!commentContent.valid" (click)="submit()">确认</button>
+</mat-dialog-actions>

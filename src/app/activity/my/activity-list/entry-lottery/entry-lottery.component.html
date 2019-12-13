@@ -1,0 +1,297 @@
+<app-master-head [title]="title" [showProgress]="showProgress" *ngIf="!step"
+    style="position: fixed; top: 0; width:100% ;z-index: 100 "></app-master-head>
+<div class="my-body" (scroll)="scrollBottom($event)" *ngIf="!step">
+    <div style="height: 56px"></div>
+    <form (ngSubmit)="formSubmit()" [formGroup]="settingForm" >
+    <div class="my-card">
+
+        <mat-form-field style="width:100%" floatLabel="auto">
+            <input matInput formControlName="title" placeholder="活动名称" required>
+        </mat-form-field>
+        <mat-form-field style="width:100%" floatLabel="auto">
+            <mat-select placeholder="票种选择" formControlName="tickets" required multiple>
+                <mat-option *ngFor="let item of tickets" [value]="item.ticketId">{{item.ticketName + '(' + item.ticketSold + ')'}}</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-checkbox style="margin-left: 10px" formControlName="inCancle">包括取消名单</mat-checkbox>
+        <mat-checkbox style="margin-left: 10px" formControlName="inUnSign">包括未签到名单</mat-checkbox>
+        <mat-checkbox style="margin-left: 10px" formControlName="canRepeat">允许重复抽取</mat-checkbox>
+
+        <div style="display: flex;" class="my-top-bottom-8">
+            <div style="width: 30%;" formArrayName="turnNames">
+                <mat-form-field style="width:100%" floatLabel="auto" *ngFor="let item of turnNames;let i=index">
+                    <input matInput [formControlName]="i" placeholder="第{{i+1}}批抽取名称" required>
+                </mat-form-field>
+
+            </div>            
+            <div style="width: 20% " formArrayName="turnBatch">
+                <mat-form-field style="width:100%" floatLabel="auto" *ngFor="let item of turnBatch;let i=index">
+                    <input matInput placeholder="" disabled>
+                    <!--占位，无用途-->
+                    <mat-checkbox matSuffix [formControlName]="i">One by one</mat-checkbox>
+                </mat-form-field>
+            </div>
+            <div style="width: 15% " formArrayName="oneOne" class="my-right-left-10">
+                <mat-form-field style="width:100%" floatLabel="auto" *ngFor="let item of oneOne;let i=index">
+                    <input matInput [formControlName]="i" placeholder="One by one 间隔">
+                    <span matSuffix>秒</span>
+                </mat-form-field>
+            </div>
+            <div style="width: 35%" formArrayName="turnSums" >
+                <mat-form-field style="width:100%" floatLabel="auto" *ngFor="let item of turnSums;let i=index">
+                    <input matInput [formControlName]="i" placeholder="抽取人数" required>
+                    <mat-icon matSuffix *ngIf="i === turnSums.length-1" (click)="addTurn($event)">
+                        add_circle_outline
+                    </mat-icon>
+                    <mat-icon matSuffix style="margin-left: 5px" *ngIf="i === turnSums.length-1 && i > 0"
+                        (click)="removeTurn($event)">
+                        remove_circle_outline
+                    </mat-icon>
+                </mat-form-field>
+            </div>
+        </div>
+        <div>
+            <button mat-raised-button [disabled]="settingForm.invalid" type="submit">保存配置</button>
+            <button type="button" style="margin-left: 8px;margin-right: 8px;" mat-raised-button (click)="edit()" [disabled]="settingForm.invalid">编辑界面&测试</button>
+            <button type="button" color="primary" mat-raised-button (click)="start()" [disabled]="settingForm.invalid"
+                style="float: right;">开始抽取</button>
+
+        </div>
+    </div>
+    </form>
+
+    <mat-tab-group>
+        <mat-tab label="帮助">
+            <p *ngIf="!isChrome" style="text-align: center; color: tomato;">当前非指定PC Chrome浏览器</p>
+            <dl class="my-right-left-16">
+                <dt>推荐使用Chrome浏览器,以保证功能完美展示。</dt>
+                <dt>允许重复抽取</dt>
+                <dd>仅支持一个完整的抽取流程中有效</dd>
+
+                <dt>One by one</dt>
+                <dd>名单一个一个抽取，否则批量一次性抽取</dd>
+
+                <dt>one by one 间隔</dt>
+                <dd>仅在One by one 选中的情况下有效</dd>
+                <dd>等于0，表示手动抽取（点击“手动One by one抽取”按钮，或空格键）</dd>
+                <dd>大于等于5，表示由系统每隔N秒自动抽取</dd>
+                <dt>请务必保证名单总数大于抽取人数之和,每批次抽取人数建议不超过60人。</dt>
+            </dl>
+        </mat-tab>
+        <mat-tab label="抽取记录">
+            <div style="display: flex;justify-content:flex-end " class ="my-right-left-16 my-top-bottom-8">
+                <button mat-raised-button  type="button" (click)="dlResults()"> 下载</button>
+            </div>
+            <mat-accordion>
+                <mat-expansion-panel *ngFor="let item of results">
+                    <mat-expansion-panel-header>
+                        <mat-panel-title>
+                            {{item.remark}}
+                        </mat-panel-title>
+                        <mat-panel-description>
+                            {{item.create}}
+                        </mat-panel-description>
+                    </mat-expansion-panel-header>
+                    <p>{{item.result}}</p>
+                </mat-expansion-panel>
+            </mat-accordion>
+
+        </mat-tab>
+    </mat-tab-group>
+</div>
+
+
+<!-- 以下抽取界面-->
+<!--  background-size 一定要放在imge之后，、-->
+<div *ngIf="step" [style.background-image]="backImg" [style.background-size]="'cover'"
+    [style.background-repeat]="'no-repeat'" [style.background-position]="'center'" style="display: flex; justify-content: center; flex-flow: column;
+    align-items: center; height:100%; ">
+    <mat-progress-bar style="position:fixed; top: 0px" mode="indeterminate" class="full-width" *ngIf="showProgress">
+    </mat-progress-bar>
+
+    <div style="width:50%;padding: 16px; border-radius: 8px;" [style.margin-top]="format.top + '%'"
+        [style.margin-left]="format.left + '%'" [style.background-color]="format.centerBackColor">
+        <!--正中-->
+        <div style="text-align: center;" [style.color]="format.titleColor" [style.font-size]="format.titleSize">
+            2020年某某公司新的年会</div>
+
+        <p style="text-align: right;" [style.color]="format.subTitleColor" [style.font-size]="format.subTitleSize">
+            {{stepName}}, 将在 {{stepTotal}} 中产生 {{stepSum}} 位幸运儿！</p>
+
+        <div style="position: relative;">
+            <div [@openClose]="isOpen ? 'open' : 'closed'" style=" padding: 4px;
+            box-shadow: 0px 0px 8px 0px #fffefe; border-radius: 8px; 
+            display: flex; flex-direction: row; flex-wrap:wrap; 
+            justify-content: space-around; align-content: center;align-items: center;"
+                [style.background-color]="format.tableBackColor" [style.color]="format.tableFontColor"
+                [style.font-size]="format.tableFontSize">
+                <!-- <mat-grid-list [cols]="tabelCol" rowHeight="42px">
+                    <mat-grid-tile *ngFor="let entry of stepResult;let i=index">{{entry.showStr}}</mat-grid-tile>
+                </mat-grid-list>
+                -->
+                <div style=" display: flex;justify-content: center;align-items: center; "
+                    [style.width]="format.cellWidth  + 'px'" [style.height]="format.cellHeight + 'px'"
+                    [style.margin]="format.cellMargin  + 'px'" [style.border-width]="format.cellBorderWidth  + 'px'"
+                    [style.border-style]="format.cellBorderStyle" [style.border-color]="format.cellBorderColor"
+                    *ngFor="let entry of stepResult;let i=index">
+                    {{entry.showStr}}</div>
+            </div>
+            <div [@openClose]="isOpen ? 'closed' : 'open'" style="top:0px; position: absolute; width: 100%; 
+            box-shadow: 0px 0px 8px 0px #fffefe; border-radius: 8px; padding: 4px;
+            display: flex; flex-direction: row; flex-wrap:wrap; 
+            justify-content: space-around; align-content: center;align-items: center;"
+                [style.background-color]="format.tableBackColor" [style.color]="format.tableFontColor"
+                [style.font-size]="format.tableFontSize">
+
+                <div style="display: flex;justify-content: center;align-items: center;"
+                    [style.width]="format.cellWidth  + 'px'" [style.height]="format.cellHeight + 'px'"
+                    [style.margin]="format.cellMargin  + 'px'" [style.border-width]="format.cellBorderWidth  + 'px'"
+                    [style.border-style]="format.cellBorderStyle" [style.border-color]="format.cellBorderColor"
+                    *ngFor="let entry of stepResult;let i=index">
+                    {{ i === this.stepStep-1 || stepBatch ? entry.showStr : ''}}</div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div style="position:fixed; top:0px;left:0px;
+        width: 140px; padding: 8px; height: 100%;
+        background-color:rgba(0, 0, 0, 0.5); color: darkgray;" [hidden]="!format.showLog" class="lotteryStepLog">
+    </div>
+
+
+
+    <div *ngIf="formatEditing" style="position:fixed; top:0px;right:16px;
+        width: 180px; padding: 8px;       
+        background:white">
+
+        <div style="display: flex;  align-items: center;" class="my-top-bottom-8">
+            <div style="background: url('/assets/images/trans.png');height: 12px;width: 20px; margin-right: 10px;">
+                <app-color-wrapper [(color)]="format.titleColor" [(size)]="format.titleSize"
+                    (colorChange)="colorChange($event)"></app-color-wrapper>
+            </div>
+            <span> 标题文字</span>
+        </div>
+        <div style="display: flex;  align-items: center;" class="my-top-bottom-8">
+            <div style="background: url('/assets/images/trans.png');height: 12px;width: 20px; margin-right: 10px;">
+                <app-color-wrapper [(color)]="format.subTitleColor" [(size)]="format.subTitleSize"></app-color-wrapper>
+            </div>
+            <span> 副标题文字</span>
+        </div>
+        <div style="display: flex;  align-items: center;" class="my-top-bottom-8">
+            <div style="background: url('/assets/images/trans.png');height: 12px;width: 20px; margin-right: 10px;">
+                <app-color-wrapper [(color)]="format.centerBackColor"></app-color-wrapper>
+            </div>
+            <span> 中间背景色</span>
+        </div>
+        <input hidden id="backImg" type="file" accept="image/*" (change)="headPic($event)">
+        <p><label style="cursor: pointer;" for="backImg"> 点击<font style="color: blue;">这里</font>更换背景 </label></p>
+        <mat-divider></mat-divider>
+        <div style="display: flex;  align-items: center;" class="my-top-bottom-8">
+            <button (click)="format.top = ( format.top ? format.top : 0 ) + 1 ">+</button>
+            <button (click)="format.top = ( format.top ? format.top : 0 ) - 1 ">-</button><span> {{format.top}}%
+                上下位移</span>
+        </div>
+
+        <div style="display: flex;  align-items: center;" class="my-top-bottom-8">
+            <button (click)="format.left = ( format.left ? format.left : 0 )  + 1 ">+</button>
+            <button (click)="format.left = ( format.left ? format.left : 0 ) - 1 ">-</button><span> {{format.left}}%
+                左右位移</span>
+        </div>
+        <mat-divider></mat-divider>
+        <div style="display: flex;  align-items: center;" class="my-top-bottom-8">
+            <div style="background: url('/assets/images/trans.png');height: 12px;width: 20px; margin-right: 10px;">
+                <app-color-wrapper [(color)]="format.tableBackColor"></app-color-wrapper>
+            </div>
+            <span> 单元格背景色</span>
+        </div>
+        <div style="display: flex;  align-items: center;" class="my-top-bottom-8">
+            <div style="background: url('/assets/images/trans.png');height: 12px;width: 20px; margin-right: 10px;">
+                <app-color-wrapper [(color)]="format.tableFontColor" [(size)]="format.tableFontSize">
+                </app-color-wrapper>
+            </div>
+            <span> 单元格文字</span>
+        </div>
+        <div style="display: flex;  align-items: center;" class="my-top-bottom-8">
+            <div style="margin-right: 10px;">
+                <app-color-wrapper [(color)]="format.cellBorderColor"></app-color-wrapper>
+            </div>
+            <span> 单元格边框颜色</span>
+        </div>
+
+        <div style="display: flex;  align-items: center;" class="my-top-bottom-8">
+            <button (click)="format.cellWidth = ( format.cellWidth ? format.cellWidth : 0 ) + 1 ">+</button>
+            <button (click)="format.cellWidth = ( format.cellWidth ? format.cellWidth : 0 ) - 1 ">-</button><span>
+                {{format.cellWidth}}
+                单元格宽</span>
+        </div>
+        <div style="display: flex;  align-items: center;" class="my-top-bottom-8">
+            <button (click)="format.cellHeight = ( format.cellHeight ? format.cellHeight : 0 ) + 1 ">+</button>
+            <button (click)="format.cellHeight = ( format.cellHeight ? format.cellHeight : 0 ) - 1 ">-</button><span>
+                {{format.cellHeight}}
+                单元格高</span>
+        </div>
+        <div style="display: flex;  align-items: center;" class="my-top-bottom-8">
+            <button (click)="format.cellMargin = ( format.cellMargin ? format.cellMargin : 0 ) + 1 ">+</button>
+            <button (click)="format.cellMargin = ( format.cellMargin ? format.cellMargin : 0 ) - 1 ">-</button><span>
+                {{format.cellMargin}}
+                单元格边距</span>
+        </div>
+        <div style="display: flex;  align-items: center;" class="my-top-bottom-8">
+            <button
+                (click)="format.cellBorderWidth = ( format.cellBorderWidth ? format.cellBorderWidth : 0 ) + 1 ">+</button>
+            <button
+                (click)="format.cellBorderWidth = ( format.cellBorderWidth ? format.cellBorderWidth : 0 ) - 1 ">-</button><span>
+                {{format.cellBorderWidth}}
+                单元格边框宽度</span>
+        </div>
+
+
+        <div style="display: flex;  align-items: center;" class="my-top-bottom-8">
+            <div style=" margin-right: 10px;">
+                <select (change)="cellBorderTypeChange($event)" [formControl]="cellBorderTypeControl">
+                    <option value="dotted">dotted</option>
+                    <option value="solid">solid</option>
+                    <option value="double">double</option>
+                    <option value="dashed">dashed</option>
+                </select>
+            </div>
+            <span> 边框样式</span>
+        </div>
+
+
+        <button mat-raised-button color="primary" type="button" (click)="formSubmit()">保存配置</button>
+        <div style="display: flex;  align-items: center;" class="my-top-bottom-8">
+            <input type="checkbox" [checked]="format.showLog" (change)="format.showLog=!format.showLog">
+            <span> 是否显示日志 </span>
+        </div>
+        <p>
+            * 灵活使用透明设置，会有意外效果。<br>
+            * 点击色块，更改。<br>
+            * 当前屏幕大小 {{screenX}} * {{screenY}}
+        </p>
+
+    </div>
+
+
+
+    <div style="position:fixed; bottom:0px;right:0px;background-color:rgba(0, 0, 0, 0.5); color:white">
+
+        <button mat-button type="button" class="startButton" *ngIf="!stepRunning && !hasResult" (disabled)="!stepEnough"
+            (click)="controlStep(true)">开始</button>
+        <button mat-button type="button" class="stopButton" *ngIf="stepRunning" (click)="controlStep(false)">
+            {{ stepBatch ? '手动批量抽取' : stepInteval ===0 ? '手动One by one抽取' : '自动One by one抽取' +'('+ stepInteval/1000 +'秒)' }}
+        </button>
+        <button mat-button type="button" *ngIf="stepRunning && !stepBatch" (click)="autoControlRest()">等不了了</button>
+        <button mat-button type="button" class="nextButton"
+            *ngIf="!stepRunning && hasResult && (step < settings.turnNames.length)" (click)="nextStep()" (disabled)="!stepEnough">下一批</button>
+
+        <span>{{timing | myTiming}}</span>
+        <button mat-button type="button" *ngIf="(step < settings.turnNames.length) && !stepRunning && !hasResult" (disabled)="!stepEnough"
+            (click)="nextStep()">跳过本批</button>
+        <button mat-button type="button" *ngIf="!stepRunning && hasResult" (click)="resetStep()">放弃结果</button>
+        <button mat-button type="button" (click)="returnSettings()">返回</button>
+    </div>
+</div>

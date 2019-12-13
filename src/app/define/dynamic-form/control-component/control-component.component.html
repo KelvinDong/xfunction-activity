@@ -1,0 +1,93 @@
+<div [formGroup]="form">
+
+
+    <div [ngSwitch]="question.controlType">
+
+        <div *ngSwitchCase="'textbox'" >
+            <mat-form-field class="full-width" floatLabel="auto">
+                <input matInput [formControlName]="question.key" placeholder="{{question.order}}、请输入 {{question.label}}" [id]="question.key"
+                    type="text" [required]="question.required">
+                <mat-icon *ngIf="editTag && question.order > 1" matSuffix (click)="removeSelf($event)">remove_circle_outline</mat-icon>
+                <mat-icon *ngIf="editTag && question.order > 1" matSuffix (click)="moveDown($event)" style="margin-left: 5px">arrow_downward</mat-icon>
+                <mat-icon *ngIf="editTag && question.order > 2" matSuffix (click)="moveUp($event)" style="margin-left: 5px">arrow_upward</mat-icon>
+                <mat-error *ngIf="!isValid">
+                    {{question.label}} 是必填项！
+                </mat-error>            
+            </mat-form-field>
+            <div *ngIf="question.intro" class=" ele-intro" >{{question.intro}}</div>
+        </div>
+        <div *ngSwitchCase="'textmorebox'" >
+            <mat-form-field class="full-width" floatLabel="auto">
+                <textarea matInput [formControlName]="question.key" placeholder="{{question.order}}、请输入 {{question.label}}" [id]="question.key"
+                    [required]="question.required" rows="3"></textarea>
+                <mat-icon *ngIf="editTag && question.order > 1" matSuffix (click)="removeSelf($event)">remove_circle_outline</mat-icon>
+                <mat-icon *ngIf="editTag && question.order > 1" matSuffix (click)="moveDown($event)" style="margin-left: 5px">arrow_downward</mat-icon>
+                <mat-icon *ngIf="editTag && question.order > 2" matSuffix (click)="moveUp($event)" style="margin-left: 5px">arrow_upward</mat-icon>
+                <mat-error *ngIf="!isValid">
+                    {{question.label}} 是必填项！
+                </mat-error>                
+            </mat-form-field>
+            <div *ngIf="question.intro" class=" ele-intro" >{{question.intro}}</div>
+        </div>
+        
+
+        <div *ngSwitchCase="'select'">
+            <mat-form-field  class="full-width" floatLabel="auto">
+                <mat-select [id]="question.key" [formControlName]="question.key" placeholder="{{question.order}}、请选择 {{question.label}}"
+                    [multiple]="question.multiple" [required]="question.required">
+                    <mat-option *ngFor="let opt of question.options" [value]="opt.key">{{opt.value}}</mat-option>
+                </mat-select>
+                <mat-icon *ngIf="editTag && question.order > 1" matSuffix (click)="removeSelf($event)">remove_circle_outline  </mat-icon>
+                <mat-icon *ngIf="editTag && question.order > 1"  matSuffix (click)="moveDown($event)" style="margin-left: 5px">arrow_downward</mat-icon>
+                <mat-icon *ngIf="editTag && question.order > 2" matSuffix (click)="moveUp($event)" style="margin-left: 5px">arrow_upward</mat-icon>
+                <mat-error *ngIf="!isValid">
+                    {{question.label}} 是必填项！
+                </mat-error>            
+            </mat-form-field>
+            <div *ngIf="question.intro" class=" ele-intro" >{{question.intro}}</div>
+        </div>
+        
+
+        <div *ngSwitchCase="'radio'" class="full-width"
+            style="display: inline-flex; flex-direction:column; margin-top: 10px;margin-bottom: 10px">
+            <div style="margin-bottom: 5px; display: flex; align-items:Center;width:100%">
+                <span>{{question.order}}、{{question.label}}</span><span style="margin-left: 5px" *ngIf="question.required">*</span>
+                <span class="fill-remaining-space"></span>
+                <mat-icon *ngIf="editTag && question.order > 1" style="margin-left: 10px; font-size: 21px;width:21px" (click)="removeSelf($event)">remove_circle_outline</mat-icon>
+                <mat-icon *ngIf="editTag && question.order > 1"  (click)="moveDown($event)" style="margin-left: 5px;font-size: 21px; width:21px">arrow_downward</mat-icon>
+                <mat-icon *ngIf="editTag && question.order > 2"  (click)="moveUp($event)" style="margin-left: 5px;font-size: 21px;width:21px">arrow_upward</mat-icon>
+            </div>
+
+            <mat-radio-group [id]="question.key" [formControlName]="question.key"
+                style="display: inline-flex; flex-direction:column; margin-left:3px" [required]="question.required">
+                <mat-radio-button *ngFor="let opt of question.options" [value]="opt.key"
+                    style="margin: 5px 0px 5px 20px">
+                    {{opt.value}}
+                </mat-radio-button>
+            </mat-radio-group>
+            <div *ngIf="question.intro" class=" ele-intro" >{{question.intro}}</div>
+        </div>
+
+
+        <div *ngSwitchCase="'checkbox'" class="full-width"
+            style="display: inline-flex; flex-direction:column;margin-top: 10px;margin-bottom: 10px">
+            <div style="margin-bottom: 5px; display: flex; align-items:Center;width:100%">
+                <span>{{question.order}}、{{question.label}}</span> <span *ngIf="question.required" style="margin-left: 5px">*</span>
+                <span class="fill-remaining-space"></span>
+                <mat-icon *ngIf="editTag && question.order > 1" style="margin-left: 5px ;font-size: 21px;width:21px" (click)="removeSelf($event)">remove_circle_outline</mat-icon>
+                <mat-icon *ngIf="editTag && question.order > 1"  (click)="moveDown($event)" style="margin-left: 5px;font-size: 21px;width:21px">arrow_downward</mat-icon>
+                <mat-icon *ngIf="editTag && question.order > 2"  (click)="moveUp($event)" style="margin-left: 5px;font-size: 21px;width:21px">arrow_upward</mat-icon>
+            </div>
+            <!--真正用户获取数据的地方-->
+            <input hidden [formControlName]="question.key" value="">
+            <mat-checkbox *ngFor="let opt of question.options" [value]="opt.key" (change)="selectCheckbox($event)"
+                style="margin-left:25px; margin-bottom: 5px" [checked]="question.value.indexOf(opt.key)+1">
+                {{opt.value}}
+            </mat-checkbox>
+            <div *ngIf="question.intro" class="ele-intro" >{{question.intro}}</div>
+        </div>
+
+    </div>
+
+
+</div>

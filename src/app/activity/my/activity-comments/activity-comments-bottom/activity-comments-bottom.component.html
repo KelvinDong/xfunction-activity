@@ -1,0 +1,5 @@
+<mat-action-list>
+        <button mat-list-item *ngIf="!data.para.commentDel && !data.para.commentReply" (click)="openLink(1,$event)"> 删除 </button>
+        <button mat-list-item *ngIf="!data.para.commentReply && !data.para.commentDel" (click)="openLink(3,$event)"> 回复 </button>
+        <button mat-list-item (click)="openLink(2,$event)"> 查看活动 </button>
+    </mat-action-list>

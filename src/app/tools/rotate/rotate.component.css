@@ -1,0 +1,35 @@
+
+/* 大转盘样式 */
+.content{
+    color:#333;
+    font-size:12px;
+    font-family:"Microsoft YaHei";
+    display:flex;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    /*居中显示*/
+    margin: 0px auto;
+}
+
+.content .wheel{
+    display:block;
+    width:70%;   /*根号2/2*/
+    position:relative;
+    /*转盘的背景*/
+    background-image:url(/assets/images/wheel-bg.png);
+    background-size:100% 100%;
+}
+
+.content .wheel canvas.item{
+    width:100%;
+}
+
+.content .wheel img.pointer{
+    position:absolute;
+    width:31.5%;
+    height:42.5%;
+    left:34.6%;
+    top:23%;
+}
+

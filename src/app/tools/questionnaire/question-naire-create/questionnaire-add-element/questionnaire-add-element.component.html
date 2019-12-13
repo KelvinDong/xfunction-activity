@@ -1,0 +1,57 @@
+<h3 mat-dialog-title>增加表单项</h3>
+<mat-dialog-content>
+    <form (ngSubmit)="onAddFormSubmit()" [formGroup]="addForm" #addFormDirective="ngForm">
+
+        <mat-form-field floatLabel="auto">
+            <mat-select placeholder="请选择控件类型" formControlName="controlType" required
+                (selectionChange)="selectChange($event)">
+                <mat-option value="textbox">单行文本框</mat-option>
+                <mat-option value="textmorebox">多行文本框</mat-option>
+                <mat-option *ngIf="data.questionnaireType !== 1 " value="select">下拉选择框</mat-option>
+                <mat-option *ngIf="data.questionnaireType === 1 " value="radio">单选(radio)</mat-option>
+                <mat-option *ngIf="data.questionnaireType === 1 " value="checkbox">复选(checkbox)</mat-option>
+
+            </mat-select>
+        </mat-form-field>
+        <mat-checkbox formControlName="required" style="margin-left: 10px">必填</mat-checkbox>
+        <mat-checkbox style="margin-left: 5px" formControlName="multiple" *ngIf="showMultiple">多选</mat-checkbox>
+        <!--仅针对下拉多选-->
+        <mat-form-field class="full-width" floatLabel="auto">
+            <input matInput placeholder="请输入表单项名称" formControlName="label" required>
+        </mat-form-field>
+
+        <mat-form-field class="full-width" floatLabel="auto">
+            <input matInput placeholder="备注" formControlName="intro">
+        </mat-form-field>
+
+        <!--
+                <mat-form-field *ngIf="!showOption" class="full-width" floatLabel="auto">
+                    <input matInput placeholder="请输入默认值" formControlName="value">
+                </mat-form-field>
+                -->
+
+        <input hidden placeholder="请输入key" formControlName="key">
+
+        <div formArrayName="options" *ngIf="showOption">
+            <!--仅针对有选荐的表单项-->
+            <label>选项：</label>
+            <mat-form-field *ngFor="let item of options ; let i=index" class="full-width" floatLabel="never">
+                <mat-icon style="margin-right: 5px" *ngIf="isCheckBox" matPrefix>check_box</mat-icon>
+                <mat-icon style="margin-right: 5px" *ngIf="isRadio" matPrefix>radio_button_checked</mat-icon>
+                <span matPrefix>{{i+1}}、</span>
+                <input matInput [formControlName]="i" placeholder="请输入选项内容" [required]="showOption">
+                <mat-icon matSuffix *ngIf="i===(options.length-1)" (click)="addOption($event)">
+                    add_circle_outline
+                </mat-icon>
+                <mat-icon matSuffix *ngIf="options.length>1" (click)="removeOption(i,$event)" style="margin-left: 5px">
+                    remove_circle_outline
+                </mat-icon>
+            </mat-form-field>
+        </div>
+
+        <mat-card-actions>
+            <button style="float: right;" color="primary" mat-raised-button [disabled]="!addForm.valid">增加</button>
+        </mat-card-actions>
+    </form>
+
+</mat-dialog-content>

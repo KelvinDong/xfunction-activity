@@ -1,0 +1,18 @@
+<app-master-head [title]="title" [showProgress]="showProgress"
+    style="position: fixed; top: 0; width:100% ;z-index: 100 "></app-master-head>
+
+<div class="my-body" style="display: flex; justify-content: center; align-items: center ; flex-direction:column">
+        
+    
+    <div *ngIf="showProgress">
+        <mat-spinner></mat-spinner>
+    </div>
+
+    <fa-icon *ngIf="mes && fal" [icon]="faExclamationCircle" size="4x" [styles]="{'stroke': 'red', 'color': 'red'}"></fa-icon>
+    <fa-icon *ngIf="mes && suc" [icon]="faCheckCircle" size="4x" [styles]="{'stroke': 'green', 'color': 'green'}"></fa-icon>
+
+    <div *ngIf="mes" class="my-card">
+        <div [innerHTML]="mes" ></div>
+    </div>
+
+</div>

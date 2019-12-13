@@ -1,0 +1,55 @@
+<div class="my-body">
+    <form [formGroup]="registerForm" (ngSubmit)="register()">
+        <div class="my-card">
+            <div style="display: flex; align-items:center;">                
+                <div>
+                    <mat-icon style="font-size: 48px; " color="primary">supervisor_account</mat-icon>
+                </div>
+                <div style="margin-left: 32px">
+                    <h3>用户注册</h3>
+                </div>
+            </div>
+
+            
+
+                <mat-form-field class="full-width" floatLabel="never">
+                    <input matInput placeholder="请输入用户名" formControlName="userName" required>
+                    <!--此 required 已经不能作为合法性较验了，只能作为控制css使用，如mat-label中显示*标识，还不是人为加*标识-->
+                    <!--<mat-hint align="end">用户名为6至20位，以字母开头，字母，数字，减号，下划线</mat-hint> -->
+                    <mat-error *ngIf="nameFormControl.invalid">
+                        <!--等同于，emailFormControl.errors.required， 但好像对于同一对像，前后风格要保持一致，否则好像要报错-->
+                        6至20位,以字母开头,字母/数字/减号/下划线
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field class="full-width" floatLabel="never">
+                    <input matInput placeholder="请输入密码" formControlName="userAuth"
+                        [type]="hide ? 'password' : 'text'" required>
+                    <mat-icon matSuffix (click)="hide = !hide">{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+                    <mat-error *ngIf="authFormControl.invalid">
+                        大于6位,必须分别包含1个数字/小/大写字母/特殊字符
+                    </mat-error>
+                </mat-form-field>
+                <!--
+            <mat-form-field class="full-width" floatLabel="never">  
+                <input matInput placeholder="请再次输入密码" formControlName="xfuUserAuth2" [type]="hide ? 'password' : 'text'"
+                    required>
+                交叉验证有问题，只好重写控件
+                <div *ngIf="registerForm.errors?.authNotEqual && (authFormControl2.touched || authFormControl2.dirty)" class="mat-error" style="font-size:80%;position:absolute;top:32px">
+                    两次密码输入请保持一致
+                </div>                
+            </mat-form-field>
+            -->
+            <div style="display: flex; align-items:center;  justify-content: center;">
+                <app-slide-control (successMatch)="successMatch($event)" style="text-align:-webkit-center">
+                </app-slide-control>
+            </div>
+            <div class="my-top-bottom-8">
+                <button mat-button color="primary" (click)="login()" type="button">登录</button>
+                <a [routerLink]="[ '/' + urlDefine.forgetPwd ]" mat-flat-button>*找回密码</a>
+                <button type="submit" mat-raised-button color="primary"
+                    [disabled]="!registerForm.valid || move == undefined " style="float: right;right: 25px">注册</button>
+            </div>
+        </div>
+    </form>
+</div>

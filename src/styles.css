@@ -1,0 +1,217 @@
+/* You can add global styles to this file, and also import other style files */
+/* primary color：  #1976d2   blue 700
+   second #d32f2f red 700
+*/
+
+html, body { height: 100%; }
+body { 
+  margin: 0 auto; 
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-size: 14px;
+}
+
+  
+  .full-width {
+    width: 100%;
+  }
+
+
+  .fill-remaining-space {
+    /* This fills the remaining space, by using flexbox. 
+       Every toolbar row uses a flexbox row layout. */
+    flex: 1 1 auto;
+  }
+.my-body{
+  max-width: 800px;
+  margin: 0 auto;
+  height: 100%;
+  overflow: auto;
+}
+.my-toolbar{
+  width: 100%;
+  height: 56px;
+  display:flex;
+  flex-direction:row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  padding: 0px;
+  background: #1976d2;
+  color: #fff;
+}
+.my-card{
+  margin-top: 8px;
+  margin-bottom: 8px;
+  transition: box-shadow 280ms cubic-bezier(.4,0,.2,1);
+  display: block;
+  position: relative;
+  padding: 16px;
+  border-radius: 0px;
+  color: rgba(0,0,0,.87);
+  box-shadow: 0 1px 1px  rgba(0,0,0,.1);
+  background-color: #fff;
+}
+
+.my-card-top-img{
+  border-top-left-radius: 0px;
+  border-top-right-radius: 0px;
+  width: calc(100% + 32px);
+  margin: -16px -16px 0px -16px;
+  object-fit: cover;
+}
+.my-card-right-img{
+  height: 40px;
+  width: 80px;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+
+.my-circle-avatar{
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    object-fit: cover;
+}
+
+.my-box-avatar{
+  height: 40px;
+  width: 40px;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+
+
+.my-top-bottom-8{
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.my-top-bottom-4{
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.my-right-left-16{
+  margin-left: 16px;
+  margin-right: 16px;
+}
+
+.my-right-left-10{
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+
+.my-title{
+  font-weight: bold; 
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.my-single-line{
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  white-space: nowrap;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  
+}
+
+.my-more-line{
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+
+.my-text{
+ 
+}
+
+
+.my-text-remark{
+  font-size: 14px;
+  color: rgba(0,0,0,.54);
+  margin-top: 4px;
+  margin-bottom: 4px;
+  
+}
+
+
+/* styles for '...' */ 
+.block-with-text {
+  /* hide text if it more than N lines  */
+  overflow: hidden;
+  /* for set '...' in absolute position */
+  position: relative; 
+  /* use this value to count block height */
+  
+  /* max-height = line-height (1.2) * lines max number (3) */
+  max-height: 36px; 
+  /* fix problem when last visible word doesn't adjoin right side  */
+  text-align: justify;
+  
+  /* */
+  margin-right: -1em;
+  padding-right: 1em;
+}
+.block-with-text:before {
+  /* points in the end */
+  content: '...';
+  /* absolute position */
+  position: absolute;
+  /* set position to right bottom corner of block */
+  right: 0;
+  bottom: 0;
+}
+.block-with-text:after {
+  /* points in the end */
+  content: '';
+  /* absolute position */
+  position: absolute;
+  /* set position to right bottom corner of text */
+  right: 0;
+  /* set width and height */
+  height: 1em;
+  margin-top: 0.2em;
+  background: white;
+}
+
+/*
+父；
+flex-direction  属性决定主轴的方向（即项目的排列方向）。 row（默认值）
+flex-wrap 如果一条轴线排不下，如何换行  nowrap（默认）
+flex-flow  flex-direction属性和flex-wrap属性的简写形式 
+justify-content 属性定义了项目在主轴上的对齐方式。
+align-items  属性定义项目在交叉轴上如何对齐。
+align-content 定义了多根轴线的对齐方式
+
+子
+order
+flex-grow  属性定义项目的放大比例，默认为0
+flex-shrink 项目的缩小比例，默认为1
+flex-basis  在分配多余空间之前，项目占据的主轴空间（main size）  默认值为auto，即项目的本来大小
+flex  flex-grow, flex-shrink 和 flex-basis  默认值为0 1 auto
+align-self  属性允许单个项目有与其他项目不一样的对齐方式，可覆盖align-items属性。默认值为auto，
+
+
+
+//默认值。替换内容拉伸填满整个content box, 不保证保持原有的比例。
+object-fit: fill;
+ 
+//保持原有尺寸比例。保证替换内容尺寸一定可以在容器里面放得下。因此，此参数可能会在容器内留下空白。
+object-fit: contain;
+ 
+//保持原有尺寸比例。保证替换内容尺寸一定大于容器尺寸，宽度和高度至少有一个和容器一致。
+//因此，此参数可能会让替换内容（如图片）部分区域不可见
+object-fit: cover;
+ 
+//保持原有尺寸比例。同时保持替换内容原始尺寸大小。
+object-fit: none;
+ 
+//最终呈现的是尺寸比较小的那个,类似于依次设置none或contain。
+
+*/
+

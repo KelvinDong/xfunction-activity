@@ -1,0 +1,29 @@
+<div style="position: fixed; top:0;right: 0;z-index: 100;">
+  <app-color-wrapper [(color)]="backColor"></app-color-wrapper>
+
+  <div style="margin-top: -2px;   width: 21px; cursor: pointer; border: 1px solid black;
+      margin-right: 1px;height: 14px; font-size: 12px;
+      background: white; color:black; text-align: center;" (click)="setting($event)" >
+      S
+  </div>
+</div> 
+<div [style.background]="backColor" style="width:100%;height:100%;position: relative;" >
+  <div class="content" [style.width]="contentWidth" >
+    <div class="wheel">
+        <canvas #canvas class="item" id="wheelCanvas" width="422px" height="422px" ></canvas>
+        <img class="pointer" src="/assets/images/wheel-pointer.png" (click)="start($event)"/>
+        <div *ngIf="showResult" [@bounceInOnEnter] [@bounceOutOnLeave] (click)="start($event)" 
+        style="position:absolute; border-radius: 50%; width:30%;height: 30%; top:35%;left: 35% ;background:#ca1518;
+          color:#ffbe04;text-align: center;
+          box-shadow: -1px -1px 2px 1px #ca1518AA;
+          box-shadow: 1px 1px 2px 1px #ca1518AA;
+          box-shadow: -1px 1px 2px 1px #ca1518AA;
+          box-shadow: 1px -1px 2px 1px #ca1518AA;
+          display: flex; justify-content: center;align-items: center;">
+            <h1>{{indexAward}}</h1>
+            
+         </div>
+    </div>
+  </div>
+  
+</div>

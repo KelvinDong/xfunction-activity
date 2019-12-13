@@ -1,0 +1,5 @@
+<mat-action-list>
+    <button *ngIf="!data.para.ticketStatus" mat-list-item (click)="openLink(1,$event)"> 启用 </button>
+    <button *ngIf="data.para.ticketStatus" mat-list-item (click)="openLink(1,$event)"> 停用</button>
+    <button mat-list-item (click)="openLink(2,$event)"> 编辑</button>
+</mat-action-list>

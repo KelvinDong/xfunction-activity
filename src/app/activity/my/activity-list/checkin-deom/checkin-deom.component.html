@@ -1,0 +1,20 @@
+<div style="position: fixed; top:0;right: 0;z-index: 100;">
+    <app-color-wrapper [color]="masterColor" (colorChange)="masterColorChange($event)"></app-color-wrapper>
+    <app-color-wrapper [color]="fontColor" (colorChange)="fontColorChange($event)"></app-color-wrapper>
+    <input hidden id="backImg" type="file" accept="image/*" (change)="headPic($event)">
+    <div style="margin-top: -2px;   width: 42px;
+        margin-left: 1px;height: 14px; font-size: 12px;
+        background: white; color:black; text-align: center;" for="backImg"><label style="cursor: pointer;" for ="backImg">B</label></div>
+    <input name="tableType"  type="radio" [checked]="tableWidth === 10"  (click)="onCheck(10)"/>
+    <input name="tableType"  type="radio" [checked]="tableWidth === 20"  (click)="onCheck(20)" />
+    <div style="margin-top: -2px;   width: 42px; border-bottom: 1px solid black;
+        margin-left: 1px;height: 14px; font-size: 12px;
+        background: white; color:black; text-align: center;">
+        {{entryIndex + 1}}</div>
+    <div style=" width: 42px;
+        margin-left: 1px;height: 14px; font-size: 12px;
+        background: white; color:black; text-align: center;">
+        {{entryTotal}}</div>
+</div> 
+<div class="content"  [style.background-image]="backImg" [style.background-size]="'cover'"
+[style.background-repeat]="'no-repeat'" [style.background-position]="'center'"></div>

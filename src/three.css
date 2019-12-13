@@ -1,0 +1,39 @@
+.element {
+    width: 120px;
+    height: 160px;
+    box-shadow: 0px 0px 12px rgba(0,255,255,0.5);
+    border: 1px solid rgba(0,255,255,0.25);
+    font-family: Helvetica, sans-serif;
+    background-position: center;
+    background-size: 120px, 160px ;
+    text-align: center;
+    line-height: normal;
+    cursor: default;
+}
+
+
+    .element .number {
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        font-size: 12px;
+        color: rgba(0,255,255,0.75);
+    }
+    .element .symbol {
+        position: absolute;
+        top: 30px;
+        left: 0px;
+        right: 0px;
+        font-size: 60px;
+        font-weight: bold;
+        color: rgba(255,255,255,0.75);
+        text-shadow: 0 0 10px rgba(0,255,255,0.95);
+    }
+    .element .details {
+        position: absolute;
+        bottom: 10px;
+        left: 0px;
+        right: 0px;
+        font-size: 20px;
+        color: rgba(0,255,255,0.75);
+    }

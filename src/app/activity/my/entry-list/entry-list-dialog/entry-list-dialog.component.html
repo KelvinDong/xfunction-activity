@@ -1,0 +1,34 @@
+<div [ngSwitch]="data.type">
+    <div *ngSwitchCase="2">
+        <h3 mat-dialog-title>出示个人签到码</h3>
+    </div>
+    <div *ngSwitchDefault>
+        <h3 mat-dialog-title>扫描"活动现场码"</h3>
+    </div>
+</div>
+<mat-dialog-content>
+
+    <div [ngSwitch]="data.type">
+        <div *ngSwitchCase="2">
+            <qrcode
+                [qrdata]="webUrl + '/' + urlDefine.signByWx + '?id=' + data.entry.entryId + '&code=' + data.entry.checkinCode" 
+                [size]="256" [level]="'M'"></qrcode>
+        </div>
+        <div *ngSwitchDefault>
+            <p>
+                “活动现场码”是签到的另一种补充方式,由系统为每一个活动生成的唯一二维码，视主办方选择是否提供。 “活动现场码”由主办方在当前活动形如下载并打印。
+            </p>
+            <p>
+                活动现场，由报名用户利用微信扫一扫功能，扫描主办方提供的“活动现场码”，即可自主完成签到。
+            </p>
+            <p>
+                用户在扫码签到前，需确保关注“xfunction"公众号，并完成登录。
+            </p>
+        </div>
+    </div>
+
+</mat-dialog-content>
+<mat-dialog-actions>
+    <span class="fill-remaining-space"></span>
+    <button mat-raised-button color="primary" mat-dialog-close>关闭</button>
+</mat-dialog-actions>

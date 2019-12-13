@@ -1,0 +1,131 @@
+<div class="my-body" style="border: 1px solid red">
+    <div class="my-toolbar">
+        <button mat-icon-button [matMenuTriggerFor]="menu">
+            <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu">
+
+            <button mat-menu-item [routerLink]="['/']">
+                <mat-icon>public</mat-icon>
+                <span>公开活动</span>
+            </button>
+            <button mat-menu-item>
+                <mat-icon>list</mat-icon>
+                <span>我的报名</span>
+            </button>
+        </mat-menu>
+        <span>xfunction</span>
+        <span class="fill-remaining-space"></span>
+        <button mat-button>登录</button>
+    </div>
+    <div class="my-card">
+
+        <div style="position: relative">
+            <img class="my-card-top-img"
+                src="http://localhost:8090/activity/images/201909/713f6972-7d4d-4402-925c-f4e2743a7053.jpg">
+            <div style="position: absolute; top:-4px;right:30px">
+                <fa-layers [fixedWidth]="true" style="margin-left: 30px">
+                    <fa-icon [icon]="faBookmark" size="3x" style="color: gray"></fa-icon>
+                    <fa-layers-text content="过期" style="color: white;" transform="shrink-4 right-8 up-5">
+                    </fa-layers-text>
+                </fa-layers>
+                <fa-layers [fixedWidth]="true" style="margin-left: 30px">
+                    <fa-icon [icon]="faBookmark" size="3x" style="color: greenyellow"></fa-icon>
+                    <fa-layers-text content="最新" style="color: black;" transform="shrink-4 right-8 up-5">
+                    </fa-layers-text>
+                </fa-layers>
+                <fa-layers [fixedWidth]="true" style="margin-left: 30px">
+                    <fa-icon [icon]="faBookmark" size="3x" style="color: red"></fa-icon>
+                    <fa-layers-text content="推荐" style="color: white;" transform="shrink-4 right-8 up-5">
+                    </fa-layers-text>
+                </fa-layers>
+            </div>
+
+        </div>
+        <div style="display: flex;justify-content: center;align-items: baseline">
+            <h3 class="my-top-bottom-8" style="flex-grow:1">活动欢迎你的养蜂活动欢迎你的养蜂活动欢迎你的养蜂</h3>
+            <button mat-raised-button color="primary">
+                领票
+            </button>
+        </div>
+
+        <div class="my-single-line">
+            <fa-icon [icon]="faCalculator" size="sm"></fa-icon> 2019-02-19 12:00 周二
+        </div>
+        <div class="my-single-line">
+            <fa-icon [icon]="faMapMarkedAlt" size="sm"></fa-icon> 江苏 扬州 广陵区益海路100号3楼（海昌大楼海昌大楼）一个不错的地主呀
+        </div>
+
+        <div style="display: flex; align-items:center;">
+            <div style="position: relative">
+                <img class="my-box-avatar"
+                    src="http://localhost:8090/activity/images/201909/713f6972-7d4d-4402-925c-f4e2743a7053.jpg">
+                <fa-layers [fixedWidth]="true" style="position: absolute;top:0; left: 0px;">
+                    <fa-icon [icon]="faSquare" style="color:#3f51b5;"></fa-icon>
+                    <fa-layers-text content="X" style="color: white;" transform="shrink-4"></fa-layers-text>
+                </fa-layers>
+
+            </div>
+            <div class="my-right-left-16" style="flex-grow: 1;width: 100px">
+                <!--width要加，否则my-single-line中的省略号无效-->
+                <div class="my-single-line">
+                    上海星辰网络科技有限公司批经验丰富的互联
+                </div>
+                <p class="my-text-remark block-with-text">
+                    星辰网络是由一批经验丰富的互联网老兵组成的创新型公司，主要业务上涉及办公自动化，文创消息等领域
+                </p>
+            </div>
+            <button mat-icon-button>
+                <fa-icon [icon]="farHeart" size="lg"></fa-icon>
+            </button>
+        </div>
+
+
+    </div>
+
+    <fa-stack>
+        <fa-icon [icon]="faCircle" stackItemSize="2x" style="color:red"></fa-icon>
+        <fa-icon [icon]="faAward" style="color: yellow" stackItemSize="1x"></fa-icon>
+    </fa-stack>
+
+    <fa-layers [fixedWidth]="true">
+        <fa-icon [icon]="faSquare"></fa-icon>
+        <fa-icon [inverse]="true" [icon]="faSpinner" transform="shrink-6"></fa-icon>
+    </fa-layers>
+
+
+
+    <fa-layers [fixedWidth]="true">
+        <fa-icon [icon]="faSquare"></fa-icon>
+        <fa-layers-text content="Yo" style="color: white;" transform="shrink-4"></fa-layers-text>
+    </fa-layers>
+
+    <fa-layers [fixedWidth]="true">
+        <fa-icon [icon]="faEnvelope"></fa-icon>
+        <fa-layers-counter content="99+"></fa-layers-counter>
+    </fa-layers>
+
+
+
+    1<fa-icon [icon]="faAward" [mask]="faSquare"></fa-icon>
+
+    2<fa-icon [icon]="faAward" rotate="90"></fa-icon>
+    3<fa-icon [icon]="faAward" rotate="180"></fa-icon>
+    4<fa-icon [icon]="faAward" rotate="270"></fa-icon>
+    5<fa-icon [icon]="faDoorOpen" flip="horizontal"></fa-icon>
+    6<fa-icon [icon]="faDoorOpen" flip="vertical"></fa-icon>
+    7<fa-icon [icon]="faDoorOpen" flip="both"></fa-icon>
+    8<fa-icon [icon]="faDoorOpen" [spin]="true"></fa-icon>
+    9<fa-icon [icon]="faDoorOpen" [pulse]="true"></fa-icon>
+    10<fa-icon [icon]="faDoorOpen" [border]="true"></fa-icon>
+    11<fa-icon [icon]="faDoorOpen" pull="left"></fa-icon>
+    12<fa-icon [icon]="faDoorOpen" pull="right"></fa-icon>
+    13<fa-icon [icon]="faDoorOpen" [styles]="{'stroke': 'red', 'color': 'red'}"></fa-icon>
+    14<fa-icon [icon]="faDoorOpen" transform="shrink-9 right-4"></fa-icon>
+    <!--
+<fa-icon [icon]="['fas', 'sync']" [spin]="isSyncAnimated" (click)="isSyncAnimated=!isSyncAnimated"></fa-icon>
+<fa-icon [icon]="['fas', 'magic']" transform="rotate-{{magicLevel}}"></fa-icon>
+<input type='range' [value]="magicLevel" (input)="magicLevel=$event.target.value"/>-->
+
+
+</div>

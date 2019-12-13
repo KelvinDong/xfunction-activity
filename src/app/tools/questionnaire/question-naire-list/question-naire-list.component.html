@@ -1,0 +1,45 @@
+<app-master-head [title]="title" [showProgress]="showProgress"
+    style="position: fixed; top: 0; width:100% ;z-index: 100 "></app-master-head>
+
+<mat-toolbar color="primary" style="position: fixed; top: 56px; width:100% ;z-index: 100 ;font-size: 14px;">
+    <span>{{ total ?  '总数:' + total : ''}}</span>
+    <span style="flex: 1 1 auto;"></span>
+    <form [formGroup]="queryForm">
+
+            <mat-checkbox class="my-right-left-10" formControlName="showExpired" (change)="queryChange()">未过期
+            </mat-checkbox>
+    </form>
+    <button mat-icon-button class="my-right-left-16" (click)="addQuestionnaire()">
+        <mat-icon>add</mat-icon>
+    </button>
+</mat-toolbar>
+<div class="my-body" style="border: 0px solid red" (scroll)="scrollBottom($event)">
+    <div style="height: 112px"></div>
+    <div class="my-card" *ngFor="let questionnaire of questionnaires, let i = index" (click)="showBottom(questionnaire)">
+        <div style="position: relative;">
+            <img class="my-card-top-img" [style.height]="headWidth"
+                onerror="this.src='assets/images/default-picture.png'" [src]="baseUrl+questionnaire.questionnairePic">
+            <div style="position: absolute; top:-4px;right:30px">
+                <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="questionnaire.expired">
+                    <fa-icon [icon]="faBookmark" size="3x" style="color: gray"></fa-icon>
+                    <fa-layers-text content="过期" style="color: white;" transform="shrink-4 right-8 up-5">
+                    </fa-layers-text>
+                </fa-layers>
+            </div>
+        </div>
+        <div class="my-single-line">
+            {{questionnaire.questionnaireName}} [{{questionnaire.questionnaireId}}]
+        </div>
+        <div class="my-single-line">
+            <fa-icon [icon]="faIdCard" size="sm"></fa-icon> {{questionnaire.questionnaireExpired}} 截止
+        </div>
+
+        <mat-divider></mat-divider>
+        <div class="my-single-line">
+            提交：{{questionnaire.questionnaireCount}}人次
+        </div>
+        <div class="my-single-line">
+            创建：{{questionnaire.questionnaireCreate}} 
+        </div>
+    </div>
+</div>
