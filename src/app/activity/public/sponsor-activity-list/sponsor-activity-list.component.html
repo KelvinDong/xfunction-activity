@@ -1,80 +1,76 @@
-<!--<div style="height: 100%;overflow: auto;" (scroll)="scrollBottom($event)"> -->
-<app-master-head [title]="title" [showProgress]="showProgress"
-    style="position: fixed; top: 0; width:100% ;z-index: 100 "></app-master-head>
-
-
-<div class="my-body" style="border: 0px solid red" (scroll)="scrollBottom($event)">
-    <div style="height: 60px"></div>
-    <div class="my-card">
-        <div style="display: flex; align-items:flex-start;">
-            <div style="position: relative">
-                <img class="my-circle-avatar" onerror="this.src='assets/images/default-head.png'"
-                    [src]="baseUrl+sponsor.sponsorLogo">
-                <!--
-                <fa-layers [fixedWidth]="true" style="position: absolute;top:-8px; left: -8px;">
-                    <fa-icon [icon]="faCircle" style="color:yellow;"></fa-icon>
-                    <fa-layers-text content="V" style="color: red;" transform="shrink-4"></fa-layers-text>
-                </fa-layers>
-                -->
-            </div>
-            <div class="my-right-left-16" style="flex-grow: 1;width: 100px">
-                <!--width要加，否则my-single-line中的省略号无效-->
-                <div class="my-single-line">
-                    {{sponsor.sponsorName}}
+<div class="my-body-parent" (scroll)="scrollBottom($event)">
+    <div class="my-body" >
+        <div class="my-card">
+            <div style="display: flex; align-items:flex-start;">
+                <div style="position: relative">
+                    <img class="my-circle-avatar" onerror="this.src='assets/images/default-head.png'"
+                        [src]="baseUrl+sponsor.sponsorLogo">
+                    <!--
+                    <fa-layers [fixedWidth]="true" style="position: absolute;top:-8px; left: -8px;">
+                        <fa-icon [icon]="faCircle" style="color:yellow;"></fa-icon>
+                        <fa-layers-text content="V" style="color: red;" transform="shrink-4"></fa-layers-text>
+                    </fa-layers>
+                    -->
                 </div>
-                <div class="my-text-remark">
-                    {{sponsor.sponsorIntro}}
+                <div class="my-right-left-16" style="flex-grow: 1;width: 100px">
+                    <!--width要加，否则my-single-line中的省略号无效-->
+                    <div class="my-single-line">
+                        {{sponsor.sponsorName}}
+                    </div>
+                    <div class="my-text-remark">
+                        {{sponsor.sponsorIntro}}
+                    </div>
                 </div>
+
+                <button mat-icon-button (click)="likeSponsor($event)">
+                    <fa-icon *ngIf="!sponsor.like" [icon]="farHeart" size="lg"></fa-icon>
+                    <fa-icon style="color: #d32f2f;" *ngIf="sponsor.like" [icon]="faHeart" size="lg"></fa-icon>
+                </button>
+
+            </div>
+        </div>
+
+        <div class="my-card" *ngFor="let activity of activities" (click)="detail(activity)">
+            <div style="position: relative;">
+                <img class="my-card-top-img" [style.height]="headWidth" onerror="this.src='assets/images/default-picture.png'"
+                    [src]="baseUrl+activity.activityPic">
+                <div style="position: absolute; top:-4px;right:30px">
+                    <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="activity.expired">
+                        <fa-icon [icon]="faBookmark" size="3x" style="color: gray"></fa-icon>
+                        <fa-layers-text content="过期" style="color: white;" transform="shrink-4 right-8 up-5">
+                        </fa-layers-text>
+                    </fa-layers>
+                    <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="activity.newPublish">
+                        <fa-icon [icon]="faBookmark" size="3x" style="color: greenyellow"></fa-icon>
+                        <fa-layers-text content="最新" style="color: black;" transform="shrink-4 right-8 up-5">
+                        </fa-layers-text>
+                    </fa-layers>
+                    <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="activity.recommand">
+                        <fa-icon [icon]="faBookmark" size="3x" style="color: red"></fa-icon>
+                        <fa-layers-text content="推荐" style="color: white;" transform="shrink-4 right-8 up-5">
+                        </fa-layers-text>
+                    </fa-layers>
+                </div>
+                <mat-chip-list style="left: 10px;position: absolute;bottom: 10px">
+                    <mat-chip *ngFor=" let tag of activity.activityTags.split(',')">{{tag}}</mat-chip>
+                </mat-chip-list>
+            </div>
+            <div style="display: flex;justify-content: center;align-items: baseline">
+                <h4 class="my-top-bottom-8" style="flex-grow:1">{{activity.activityTitle}}</h4>
+                <button mat-raised-button color="primary">
+                    领票
+                </button>
             </div>
 
-            <button mat-icon-button (click)="likeSponsor($event)">
-                <fa-icon *ngIf="!sponsor.like" [icon]="farHeart" size="lg"></fa-icon>
-                <fa-icon style="color: #d32f2f;" *ngIf="sponsor.like" [icon]="faHeart" size="lg"></fa-icon>
-            </button>
-
-        </div>
-    </div>
-
-    <div class="my-card" *ngFor="let activity of activities" (click)="detail(activity)">
-        <div style="position: relative;">
-            <img class="my-card-top-img" [style.height]="headWidth" onerror="this.src='assets/images/default-picture.png'"
-                [src]="baseUrl+activity.activityPic">
-            <div style="position: absolute; top:-4px;right:30px">
-                <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="activity.expired">
-                    <fa-icon [icon]="faBookmark" size="3x" style="color: gray"></fa-icon>
-                    <fa-layers-text content="过期" style="color: white;" transform="shrink-4 right-8 up-5">
-                    </fa-layers-text>
-                </fa-layers>
-                <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="activity.newPublish">
-                    <fa-icon [icon]="faBookmark" size="3x" style="color: greenyellow"></fa-icon>
-                    <fa-layers-text content="最新" style="color: black;" transform="shrink-4 right-8 up-5">
-                    </fa-layers-text>
-                </fa-layers>
-                <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="activity.recommand">
-                    <fa-icon [icon]="faBookmark" size="3x" style="color: red"></fa-icon>
-                    <fa-layers-text content="推荐" style="color: white;" transform="shrink-4 right-8 up-5">
-                    </fa-layers-text>
-                </fa-layers>
+            <div class="my-single-line">
+                <fa-icon [icon]="faCalendarAlt" size="sm"></fa-icon> {{activity.activityStart | myDate:'yy-MM-dd DD'}}
             </div>
-            <mat-chip-list style="left: 10px;position: absolute;bottom: 10px">
-                <mat-chip *ngFor=" let tag of activity.activityTags.split(',')">{{tag}}</mat-chip>
-            </mat-chip-list>
-        </div>
-        <div style="display: flex;justify-content: center;align-items: baseline">
-            <h4 class="my-top-bottom-8" style="flex-grow:1">{{activity.activityTitle}}</h4>
-            <button mat-raised-button color="primary">
-                领票
-            </button>
-        </div>
+            <div class="my-single-line">
+                <fa-icon style="margin-right:4px;" [icon]="faMapMarkerAlt" size="sm"></fa-icon>{{activity.activityArea}}
+                {{activity.activityAddress}}
+            </div>
 
-        <div class="my-single-line">
-            <fa-icon [icon]="faCalendarAlt" size="sm"></fa-icon> {{activity.activityStart | myDate:'yy-MM-dd DD'}}
-        </div>
-        <div class="my-single-line">
-            <fa-icon style="margin-right:4px;" [icon]="faMapMarkerAlt" size="sm"></fa-icon>{{activity.activityArea}}
-            {{activity.activityAddress}}
         </div>
 
     </div>
-
 </div>

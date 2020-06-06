@@ -1,26 +1,34 @@
-<app-master-head [title]="title" [showProgress]="showProgress"
-    style="position: fixed; top: 0; width:100% ;z-index: 100 "></app-master-head>
-<mat-toolbar color="primary"  style="position: fixed; top: 56px; width:100% ;z-index: 100 ;font-size: 14px;">
-    <span style="flex: 1 1 auto;"></span>
-    <a mat-icon-button [routerLink]="['/'+ urlDefine.createFrom]"> 
-        <mat-icon>add</mat-icon>
-    </a>
-</mat-toolbar>
 
-<div class="my-body" style="border: 0px solid red" (scroll)="scrollBottom($event)">
-    <div style="height: 112px"></div>
-    <mat-list>
-        <mat-list-item *ngFor="let form of formsData, let i = index" (click)="showForm(form)">
-
-            <span matListIcon>{{i+1}}</span>
-
-            <h3 matLine>{{form.formName}}</h3>
-
-            <p matLine>
-                <span> 更新于：{{form.formUpdate}}</span>
-            </p>
-
-        </mat-list-item>
-
-    </mat-list>
+<div  style="width: 100%;overflow-y: scroll; ">
+    <mat-toolbar class="search-toolbar">
+        <span style="flex: 1 1 auto;"></span>
+        <a mat-icon-button [routerLink]="['/'+ urlDefine.createFrom]"> 
+            <mat-icon>add</mat-icon>
+        </a>
+    </mat-toolbar>
 </div>
+
+<div class="my-body-parent-top" style="height: calc( 100% - 70px - 64px );overflow-y: scroll " (scroll)="scrollBottom($event)">
+    <div class="my-body"  >
+        <mat-list>
+            <mat-list-item *ngFor="let form of formsData, let i = index" (click)="showForm(form)">
+
+                <span matListIcon>{{i+1}}</span>
+
+                <h3 matLine>{{form.formName}}</h3>
+
+                <p matLine>
+                    <span> 更新于：{{form.formUpdate}}</span>
+                </p>
+
+            </mat-list-item>
+
+        </mat-list>
+
+        <div *ngIf="!formsData || formsData.length === 0 " style="display: flex;justify-content: center;align-items: center; height: 100%; flex-direction: column;">
+            <img src="/assets/images/nocontent.png" style="max-width: 50%; margin-top: 64px;">
+                <p style="display: block;">空空如也，请点击+创建模板</p>
+        </div>
+    </div>
+</div>
+

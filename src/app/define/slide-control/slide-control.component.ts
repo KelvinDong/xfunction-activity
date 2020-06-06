@@ -139,8 +139,7 @@ export class SlideControlComponent implements OnInit {
           this.sliderContainer.classList.add('sliderContainer_success');
           this.puzzleBox.style.display = 'none';
         } else {
-          this.userService.showError(this.result);
-
+          this.userService.showError1(this.result, () => {this.touchEnd(e); });
           this.sliderContainer.classList.add('sliderContainer_fail');
           this.sliderText.innerHTML = '再试一次';
           setTimeout(() => {
@@ -148,7 +147,7 @@ export class SlideControlComponent implements OnInit {
           }, 1000);
         }
       },
-      (error: Result) => this.userService.showError(error)
+      (error: Result) => this.userService.showError1(error, () => {this.touchEnd(e); })
     );
 
   }
@@ -174,10 +173,10 @@ export class SlideControlComponent implements OnInit {
         this.puzzleBefore.querySelector('img').src = this.pngBase64 + this.result.data.smallImage;
         this.puzzleBefore.style.top = this.result.data.yheight + 'px';
       } else {
-        this.userService.showError(this.result);
+        this.userService.showError1(this.result, () => {this.draw(); });
       }
     },
-      (error: Result) => this.userService.showError(error)
+      (error: Result) => this.userService.showError1(error, () => {this.draw(); })
     );
   }
 

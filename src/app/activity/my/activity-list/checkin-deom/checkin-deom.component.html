@@ -5,8 +5,17 @@
     <div style="margin-top: -2px;   width: 42px;
         margin-left: 1px;height: 14px; font-size: 12px;
         background: white; color:black; text-align: center;" for="backImg"><label style="cursor: pointer;" for ="backImg">B</label></div>
-    <input name="tableType"  type="radio" [checked]="tableWidth === 10"  (click)="onCheck(10)"/>
-    <input name="tableType"  type="radio" [checked]="tableWidth === 20"  (click)="onCheck(20)" />
+    <input name="tableType" style="margin: 3px 0px 0px 1px" type="radio" [checked]="masterFormat === 'table' && tableWidth === 10"  (click)="onCheck(1)"/>
+    <input name="tableType" style="margin: 3px 0px 0px 1px" type="radio" [checked]="masterFormat === 'table' && tableWidth === 20"  (click)="onCheck(2)" />
+    <input name="tableType" style="margin: 3px 0px 0px 1px" type="radio" [checked]="masterFormat === 'round'"  (click)="onCheck(3)" />
+
+    <input hidden id="backAudio" type="file" accept="audio/*" (change)="addMusic($event)">
+    <div style="margin-top: 2px;   width: 42px;
+            margin-left: 1px;height: 14px; font-size: 12px;
+            background: white; color:black; text-align: center;" for="backAudio"><label style="cursor: pointer;" for ="backAudio">M</label></div>
+    <input name="doneMute"  type="checkbox" (click)="muteDone($event)"/>
+    <input name="warmMute"  type="checkbox" checked (click)="muteWarm($event)" />
+
     <div style="margin-top: -2px;   width: 42px; border-bottom: 1px solid black;
         margin-left: 1px;height: 14px; font-size: 12px;
         background: white; color:black; text-align: center;">
@@ -15,6 +24,7 @@
         margin-left: 1px;height: 14px; font-size: 12px;
         background: white; color:black; text-align: center;">
         {{entryTotal}}</div>
+    
 </div> 
 <div class="content"  [style.background-image]="backImg" [style.background-size]="'cover'"
 [style.background-repeat]="'no-repeat'" [style.background-position]="'center'"></div>

@@ -12,6 +12,7 @@ import { convertDateFromString, getAndSavePath, isExplorer } from 'src/app/ts/ba
 import { MatSnackBar } from '@angular/material';
 import { Region } from 'src/app/ts/region';
 import { windowToggle } from 'rxjs/operators';
+import { CommandService } from 'src/app/user/command.service';
 
 @Component({
   selector: 'app-sponsor-activity-list',
@@ -50,6 +51,7 @@ export class SponsorActivityListComponent implements OnInit {
   constructor(
     private el: ElementRef,
     private userService: UserService,
+    private commandService: CommandService,
     public snackBar: MatSnackBar,
     private router: Router,
     private activeRoute: ActivatedRoute,
@@ -69,7 +71,11 @@ export class SponsorActivityListComponent implements OnInit {
     this.activeRoute.params.subscribe((data: Params) => {
       if (data.id !== undefined) { // 编辑
         this.sponsor = {sponsorId: data.id};
-        this.getActivities();
+        setTimeout(() => {
+          this.getActivities();
+          this.commandService.setMessage(3);
+        }, 100);
+        
       }
     });
 
@@ -94,6 +100,7 @@ export class SponsorActivityListComponent implements OnInit {
     const formData = { sponsorId: this.sponsor.sponsorId, offset: this.query.offset , limit: this.query.limit };
 
     this.showProgress = true;
+    this.commandService.setMessage(1);
     this.userService.post(baseConfig.sponsorActivityList, formData).subscribe(
       (data: Result) => {
         const result = { ...data };
@@ -153,12 +160,16 @@ export class SponsorActivityListComponent implements OnInit {
           }
 
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => {this.getActivities(); });
         }
         this.showProgress = false;
-        // console.log(this.activities);
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; },
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.getActivities(); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
     );
   }
 
@@ -176,13 +187,14 @@ export class SponsorActivityListComponent implements OnInit {
   }
 
   detail(activity: any) {
-    console.log('dd');
+    // console.log('dd');
     this.router.navigate([this.urlDefine.publicActivity, activity.activityId]);
   }
 
   likeSponsor(event: any) {
 
     this.showProgress = true;
+    this.commandService.setMessage(1);
     this.userService.post(baseConfig.toggleFavi, {sponsorId: this.sponsor.sponsorId}).subscribe(
       (data: Result) => {
         const result = { ...data };
@@ -199,11 +211,16 @@ export class SponsorActivityListComponent implements OnInit {
           }
           window.localStorage.setItem('favList', this.favSponsorGroup.toString());
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => {this.likeSponsor(event); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; },
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.likeSponsor(event); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
     );
 
     event.stopPropagation();

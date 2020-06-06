@@ -1,59 +1,60 @@
 <div style="position: fixed; top:40%;left:calc(50% - 50px) ;z-index:100;" *ngIf="showProgress">
     <mat-spinner></mat-spinner>
 </div>
-<div class="my-body" (scroll)="scrollBottom($event)">
+<div class="my-body-parent-top" (scroll)="scrollBottom($event)">
+    <div class="my-body" >
 
-    <div class="screenPrint">
-        <div style="position: relative">
-            <!-- 
-                    一般就是跨域的图片，直接引用是可以用的，不存在跨域的问题。    
-                    这个为什么要加v=1,是确保这个地方的图片从服务器重取一份，且是通过跨域来获得的，这样保证之后的canvas中跨域时，是取得这里的缓存
-                    但这里还是存在一个问题在加入v=1,原有的nginx配置不能实现跨域，所在修改了nginx配置，这样所有图片都能获取跨域信息了
-                    也就没有必要加 crossorigin="anonymous" -->
-            <a [href]="baseUrl + questionnaire.questionnairePic"><img style="width:100%;object-fit: cover;" [style.height]="headWidth" [src]="baseUrl + questionnaire.questionnairePic"
-                onerror="this.src='assets/images/default-picture.png'"></a>
+        <div class="screenPrint">
+            <div style="position: relative">
+                <!-- 
+                        一般就是跨域的图片，直接引用是可以用的，不存在跨域的问题。    
+                        这个为什么要加v=1,是确保这个地方的图片从服务器重取一份，且是通过跨域来获得的，这样保证之后的canvas中跨域时，是取得这里的缓存
+                        但这里还是存在一个问题在加入v=1,原有的nginx配置不能实现跨域，所在修改了nginx配置，这样所有图片都能获取跨域信息了
+                        也就没有必要加 crossorigin="anonymous" -->
+                <a [href]="baseUrl + questionnaire.questionnairePic"><img style="width:100%;object-fit: cover;" [style.height]="headWidth" [src]="baseUrl + questionnaire.questionnairePic"
+                    onerror="this.src='assets/images/default-picture.png'"></a>
 
-            <div style="position: absolute; top:12px;right:60px">
-                <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="questionnaire.expired">
-                    <fa-icon [icon]="faBookmark" size="3x" style="color: gray"></fa-icon>
-                    <fa-layers-text content="过期" style="color: white;" transform="shrink-4 right-8 up-5">
-                    </fa-layers-text>
-                </fa-layers>                
+                <div style="position: absolute; top:12px;right:60px">
+                    <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="questionnaire.expired">
+                        <fa-icon [icon]="faBookmark" size="3x" style="color: gray"></fa-icon>
+                        <fa-layers-text content="过期" style="color: white;" transform="shrink-4 right-8 up-5">
+                        </fa-layers-text>
+                    </fa-layers>                
+                </div>
+                <div *ngIf="sharing" style="position: absolute; top:0px;right:16px;padding: 4px;background: white;">
+                    <qrcode [qrdata]="webUrl + '/' + urlDefine.publicQuestionnaire + '/' +questionnaire.questionnaireId" [size]="125"
+                        [level]="'M'">
+                    </qrcode>
+                </div>
+
+                <fa-icon [icon]="faHome" [inverse]="true" size="2x" style="left: 8px;position: absolute;bottom: 10px;"
+                    [routerLink]="['/'+urlDefine.indexUrl]"></fa-icon>
+                <fa-icon [icon]="faCamera" [inverse]="true" size="lg" style="left: 48px;position: absolute;bottom: 10px;"
+                    (click)="share()"></fa-icon>
             </div>
-            <div *ngIf="sharing" style="position: absolute; top:0px;right:16px;padding: 4px;background: white;">
-                <qrcode [qrdata]="webUrl + '/' + urlDefine.publicQuestionnaire + '/' +questionnaire.questionnaireId" [size]="125"
-                    [level]="'M'">
-                </qrcode>
-            </div>
 
-            <fa-icon [icon]="faHome" [inverse]="true" size="2x" style="left: 8px;position: absolute;bottom: 10px;"
-                [routerLink]="['/'+urlDefine.indexUrl]"></fa-icon>
-            <fa-icon [icon]="faCamera" [inverse]="true" size="lg" style="left: 48px;position: absolute;bottom: 10px;"
-                (click)="share()"></fa-icon>
+            <h3 class="my-right-left-10" style=" margin-bottom: 0">
+                {{questionnaire.questionnaireName}}
+            </h3>
+
+            <!--因为截图的问题 fa 图标显示 有问题，换回material-->
+            <div class="my-card">
+                <div>                
+                    {{questionnaire.questionnairePre}}
+                </div>
+            </div>
         </div>
 
-        <h3 class="my-right-left-10" style=" margin-bottom: 0">
-            {{questionnaire.questionnaireName}}
-        </h3>
+        <app-dynamic-form  *ngIf="questions && entryRight" [questions]="questions" [editTag]="false" (formSubmit)="entryPrepare($event)"></app-dynamic-form>
 
-        <!--因为截图的问题 fa 图标显示 有问题，换回material-->
-        <div class="my-card">
-            <div>                
-                {{questionnaire.questionnairePre}}
+        <div class="my-card" *ngIf="!entryRight">
+                <div>                
+                        {{questionnaire.questionnaireAfter}}
+                </div>
             </div>
-        </div>
+
     </div>
-
-    <app-dynamic-form  *ngIf="questions && entryRight" [questions]="questions" [editTag]="false" (formSubmit)="entryPrepare($event)"></app-dynamic-form>
-
-    <div class="my-card" *ngIf="!entryRight">
-            <div>                
-                    {{questionnaire.questionnaireAfter}}
-            </div>
-        </div>
-
 </div>
-
 <div style="position: fixed; bottom: 72px; width: 100%;"  *ngIf="showUP">
         <div style="margin:0 auto;max-width: 800px;display:flex;justify-content: flex-end; ">
             <div style="cursor: pointer; margin-right: 36px;"  color="accent" (click)="scrollTop()">

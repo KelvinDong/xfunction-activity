@@ -53,7 +53,7 @@ export class ActivityListDialogComponent implements OnInit {
             });
           }
         },
-        (error: Result) => { this.userService.showError(error); }
+        (error: Result) => { this.userService.showError1(error, () => {this.ngOnInit(); }); }
       );
     }
   }

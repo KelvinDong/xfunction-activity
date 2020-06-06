@@ -4,11 +4,15 @@ import { UserService, Result } from 'src/app/user/user.service';
 import { MatDialog, MatSnackBar } from '@angular/material';
 import { RotateDialogComponent } from './rotate-dialog/rotate-dialog.component';
 import { EventManager } from '@angular/platform-browser';
-import { getUserName as getUserLocalName} from '../../ts/base-utils';
+import { getAndSavePath, getUserToken} from '../../ts/base-utils';
 import { ColorWrapperComponent } from 'src/app/define/color-wrapper/color-wrapper.component';
 
 import { bounceInOnEnterAnimation, bounceOutOnLeaveAnimation } from 'angular-animations';
-import { baseConfig } from 'src/app/ts/base-config';
+import { baseConfig, urlDefine } from 'src/app/ts/base-config';
+import { environment } from 'src/environments/environment';
+import { ActivatedRoute } from '@angular/router';
+import { faHome } from '@fortawesome/free-solid-svg-icons';
+import { CommandService } from 'src/app/user/command.service';
 
 /**
  * 仅建议奖品不超过12个，奖品名称不超过8个字
@@ -30,7 +34,9 @@ export class RotateComponent implements OnInit {
   @ViewChild(ColorWrapperComponent, { static: false })
   cw: ColorWrapperComponent;
 
-  title = 'round';
+  faHome = faHome;
+  urlDefine = urlDefine;
+
   contentWidth;
   backColor = '#4AD7E2';
 
@@ -39,8 +45,8 @@ export class RotateComponent implements OnInit {
     outsideRadius: 192,			// 转盘外圆的半径
     textRadius: 155,				// 转盘奖品位置距离圆心的距离
     insideRadius: 68,			// 转盘内圆的半径
-    startAngle: 0,				// 开始角度
-    bRotate: false				// false:停止;ture:旋转
+    // startAngle: 0,				// 开始角度
+    // bRotate: false				// false:停止;ture:旋转
   };
 
   settingJson = {
@@ -58,21 +64,27 @@ export class RotateComponent implements OnInit {
 
   userName;
 
+  done = new Audio(environment.media + '/activity/audio/6666.mp3');
+
   constructor(
     private userService: UserService,
+    private commandService: CommandService,
     public dialog: MatDialog,
     public snackBar: MatSnackBar,
+    private activeRoute: ActivatedRoute,
     private eventManager: EventManager,
   ) { }
 
 
   ngOnInit(): void {
 
+    getAndSavePath(this.activeRoute);
+
     this.eventManager.addGlobalEventListener('window', 'keydown.space', () => {
       this.start(null);
     });
 
-    this.userName = getUserLocalName();
+
 
     this.resetWindow();
     window.onresize = () => {
@@ -81,29 +93,36 @@ export class RotateComponent implements OnInit {
 
     this.initData(); // 采用默认数据
 
-    if (this.userName) {
-      this.userService.post(baseConfig.toolGet, {}).subscribe(
-        (data: Result) => {
-          const result = { ...data };
-          if (result.success) {
-            if (result.data.toolSettings) {
-              const temp = JSON.parse(result.data.toolSettings);
-              this.settingJson = temp;
-              this.backColor = temp.backColor;
-              this.initData();
-            }
-          } else {
-            this.userService.showError(result);
-          }
-          // this.showProgress = false;
-        },
-        (error: Result) => {
-          this.userService.showError(error);
-          // this.showProgress = false;
-        }
-      );
+    if (getUserToken()) {
+      setTimeout(() => {
+        this.getSetting();
+        this.commandService.setMessage(2); // hide
+      }, 100);
     }
 
+  }
+
+  getSetting(){
+    this.userService.post(baseConfig.toolGet, {}).subscribe(
+      (data: Result) => {
+        const result = { ...data };
+        if (result.success) {
+          if (result.data.toolSettings) {
+            const temp = JSON.parse(result.data.toolSettings);
+            this.settingJson = temp;
+            this.backColor = temp.backColor;
+            this.initData();
+          }
+        } else {
+          this.userService.showError1(result, () => { this.getSetting(); });
+        }
+        // this.showProgress = false;
+      },
+      (error: Result) => {
+        this.userService.showError1(error, () => { this.getSetting(); });
+        // this.showProgress = false;
+      }
+    );
   }
 
   resetWindow() {
@@ -168,7 +187,7 @@ export class RotateComponent implements OnInit {
     // 画具体内容
     for (let index = 0; index < this.turnWheel.rewardNames.length; index++) {
       // 当前的角度
-      const angle = this.turnWheel.startAngle + index * baseAngle;
+      const angle = index * baseAngle;
       // 填充颜色
       ctx.fillStyle = index % 2 === 0 ? '#FFF4D7' : '#FFFFFF';
 
@@ -234,7 +253,6 @@ export class RotateComponent implements OnInit {
   }
 
   start(e: any) {
-
     if (e) {
       e.stopPropagation();
     }
@@ -244,7 +262,7 @@ export class RotateComponent implements OnInit {
       return;
     }
 
-
+    this.done.play();
 
     // console.log(this.turnWheel);
     // console.log(this.random.percentage);
@@ -275,10 +293,18 @@ export class RotateComponent implements OnInit {
     const shakeAngle = Math.round(Math.random()) > 0 ? Math.random() * perAngle : - Math.random() * perAngle;
     // 根据奖品获得效果角度
     this.targetAngle = realAngle + shakeAngle / 3 +
-      Math.floor(Math.random() * total) * 360 + 720; // 多转的圈数
+      // Math.floor(Math.random() * total) * 360 + 720; // 多转的圈数
+      12 * 360;
 
     this.roate(canvas);
     // canvas.style.transform = 'rotate(' + this.angle + 'deg)';
+  }
+
+  muteDone(e: any) {
+    if (e) {
+      this.done.muted = e.target.checked;
+      // this.done.play();
+    }
   }
 
   roate(canvas) {
@@ -323,25 +349,28 @@ export class RotateComponent implements OnInit {
         settingResutl.backColor = this.backColor;
         this.initData();
         if (this.userName) {
-          this.userService.post(baseConfig.toolSet, {toolSettings: JSON.stringify(settingResutl)}).subscribe(
-            (data: Result) => {
-              const result = { ...data };
-              if (result.success) {
-              } else {
-                this.userService.showError(result);
-              }
-              // this.showProgress = false;
-            },
-            (error: Result) => {
-              this.userService.showError(error);
-              // this.showProgress = false;
-            }
-          );
+          this.setSetting(settingResutl);
         }
       }
     });
   }
   
+  setSetting(settingResutl){
+    this.userService.post(baseConfig.toolSet, {toolSettings: JSON.stringify(settingResutl)}).subscribe(
+      (data: Result) => {
+        const result = { ...data };
+        if (result.success) {
+        } else {
+          this.userService.showError1(result, () => { this.setSetting(settingResutl); });
+        }
+        // this.showProgress = false;
+      },
+      (error: Result) => {
+        this.userService.showError1(error, () => { this.setSetting(settingResutl); });
+        // this.showProgress = false;
+      }
+    );
+  }
   /*
   clickBound(){
     console.log('click');

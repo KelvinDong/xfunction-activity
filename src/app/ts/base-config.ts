@@ -1,3 +1,5 @@
+import { environment } from 'src/environments/environment';
+
 export const baseConfig = {
     getAuthImage: '/slide/get',
     vertifyAuthImage: '/slide/vertify',
@@ -6,6 +8,10 @@ export const baseConfig = {
     userGet: '/user/base/get',
     userChangeAuth: '/user/base/changeAuth',
     userUpdateResume: '/user/base/updateResume',
+    headPic: '/user/base/picUser',
+
+    sendLoginCode: '/user/base/sendLoginCode',
+    userLogin: '/user/base/userLogin',
 
     sendBindCode: '/user/base/sendBindCode',
     activeMobile: '/user/base/activeMobile',
@@ -97,10 +103,10 @@ export const urlDefine = {
     indexUrl: 'activity/public/public-list',
 
     // user
-    loginUrl: 'user/login',
-    registerUrl: 'user/register',
+     loginUrl: 'user/login',
+     registerUrl: 'user/register',
     myUrl: 'user/my',
-    forgetPwd : 'user/forget-pwd',
+     forgetPwd : 'user/forget-pwd',
 
     createFrom: 'activity/my/create-form',
     createActiviry: 'activity/my/create-activity',
@@ -152,7 +158,7 @@ export const regDefine = {
 
   sponsorName: /^.{2,45}$/,
   sponsorIntro: /^[\s\S]{6,512}$/,
-  mobileCode: /^$|^\d{6}$/,
+  mobileCode: /^$|^\d{4}$/,
 
   comment: /^[\s\S]{6,500}$/,
 
@@ -170,5 +176,207 @@ export const regDefine = {
 export const lsDefine = {
   userInfo: 'userInfo',
   redirectUrl: 'redirectUrl'
+};
+
+export const constant = {
+  sidebarDemoLinks: [
+      {
+          label: 'Item 1 (with Font awesome icon)',
+          svgIcon: 'psychology',
+          activeSvgIcon: 'activePsychology',
+          items: [
+              {
+                  label: 'Alter Configurations',
+                  faIcon: 'fa fa-address-book',
+                  activeFaIcon: 'fa fa-id-card',
+                  items: [
+                      {
+                          label: 'Default',
+                          link: '/demo-one',
+                          icon: 'favorite',
+                          activeIcon: 'favorite_border',
+                          disabled: true,
+
+                      },
+                      {
+                          label: 'Changing Colours',
+                          link: '/demo two',
+                          icon: 'favorite_border',
+                          activeIcon: 'favorite',
+                          navigationExtras: {
+                              queryParams: { order: 'popular', filter: 'new' },
+                          }
+                      },
+                      {
+                          label: 'Changing Padding',
+                          link: '/demo/12',
+                          icon: 'favorite_border',
+                          activeIcon: 'favorite'
+                      },
+                      {
+                          label: 'Changing Background',
+                          link: '/demo',
+                          imageIcon: '/assets/batman.jpg',
+                          activeImageIcon: '/assets/blackpanther.jpg',
+                      }
+                  ]
+              },
+              {
+                  label: 'Alter Items Array',
+                  icon: 'alarm',
+                  items: [
+                      {
+                          label: 'Default',
+                          icon: 'favorite'
+                      },
+                      {
+                          label: 'Remote Json',
+                          icon: 'favorite_border',
+                          disabled: true,
+                      },
+                      {
+                          label: 'Dynamic arrays',
+                          icon: 'favorite_border'
+                      }
+                  ]
+              }
+          ]
+      },
+      {
+          label: 'NPM',
+          icon: 'info_outline',
+          link: 'https://www.npmjs.com/package/ng-material-multilevel-menu',
+          externalRedirect: true
+      }
+  ],
+  sidebarConfigurations: {
+      paddingAtStart: true,
+      interfaceWithRoute: true,
+      rtlLayout: false,
+      collapseOnSelect: true,
+      highlightOnSelect: true,
+      //listBackgroundColor: `rgb(208, 241, 239)`,
+      //fontColor: `rgb(8, 54, 71)`,
+      //backgroundColor: `rgb(208, 241, 239)`,
+      //selectedListFontColor: `red`,
+  },
+  appItems: [
+      {
+        label: '首页',
+        icon: 'home',
+        url: environment.web + '/html/index.html',
+      },
+      {
+        label: '短链接工具',
+        icon: 'link',
+        link: '',
+        items:[
+          {
+            label: '短链接生成',
+            link: '',
+            url: environment.web + '/html/shortLink/index.html',
+          },
+          {
+            label: '短链接还原',
+            link: '',
+            disabled: true,
+          }
+        ]
+      },
+      {
+        label: '活动工具',
+        icon: 'volume_up',
+        items:[
+          {
+            label: '公开活动',
+            link: '/' + urlDefine.publicActivityList
+          },
+          {
+            label: '我的报名',
+            items:[
+              {
+                label: '报名历史',
+                link: '/' + urlDefine.myEntries
+              },
+              {
+                label: '评论过往',
+                link: '/' + urlDefine.myComments
+              },
+              {
+                label: '我的关注',
+                link: '/'+urlDefine.myFaviList
+              }
+            ]
+          },
+          {
+            label: '我的活动',
+            items: [
+              {
+                label: '活动管理',
+                link: '/' + urlDefine.listActivity
+              },
+              {
+                label: '评论管理',
+                link: '/' + urlDefine.activityComments
+              },
+              {
+                label: '报名模板',
+                link: '/' + urlDefine.listFrom
+              },
+              {
+                label: '主办信息',
+                link: '/' + urlDefine.sponsor
+              }
+            ]
+          }
+        ]
+      },
+      {
+        label: '市场工具',
+        icon: 'assessment',
+        items:[
+          {
+            label: '调查问卷',
+            link: '/' + urlDefine.myQuesttionnaires
+          },
+          {
+            label: '信息表单',
+            link: '/' + urlDefine.myGinfos
+          }
+        ]
+      },
+      {
+        label: '大转盘',
+        link: '/' + urlDefine.rotate,
+        icon: 'rotate_right'
+      },
+      {
+          label: '帮助',
+          icon: 'help_outline',
+          items: [
+              {
+                label: '抽奖demo',
+                link: '/activity/my/entry-lottery/1',
+              },
+              {
+                label: '签到墙Demo',
+                link: '',
+                url: '/activity/my/checkin-demo'
+              },
+              {
+                label: '意见反馈',
+                link: '/tools/questionnaire-public/2',
+            }
+          ]
+      },
+      
+      {
+          label: 'Item 44',
+          link: '/item-4',
+          icon: 'star_rate',
+          hidden: true
+      }
+  ]
+
 };
 

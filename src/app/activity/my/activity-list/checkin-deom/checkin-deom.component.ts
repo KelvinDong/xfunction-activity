@@ -5,14 +5,19 @@ import * as THREE from 'three';
 import * as Stats from 'stats.js';
 import TWEEN from '@tweenjs/tween.js';
 import { TrackballControls, CSS3DRenderer, CSS3DObject } from 'three-full';
-import { canvasDataURL } from 'src/app/ts/base-utils';
+import { canvasDataURL, getAndSavePath } from 'src/app/ts/base-utils';
 import { FormControl } from '@angular/forms';
 import { WebsocketService } from 'src/app/ts/websocket.service';
 import { environment } from 'src/environments/environment';
 import { ActivatedRoute, Params } from '@angular/router';
 import { UserService, Result } from 'src/app/user/user.service';
 import { baseConfig } from 'src/app/ts/base-config';
+import { CommandService } from 'src/app/user/command.service';
 
+export interface Entry {
+  name: string;
+  head: string;
+}
 
 @Component({
   selector: 'app-checkin-deom',
@@ -21,7 +26,6 @@ import { baseConfig } from 'src/app/ts/base-config';
 })
 export class CheckinDeomComponent implements OnInit {
 
-  title = 'checkin';
   showProgress = false;
 
   componentRunning = true;
@@ -51,89 +55,125 @@ export class CheckinDeomComponent implements OnInit {
   yMoveBeforeInit10 = 5000;
   yMoveBeforeInit20 = 0;
 
-  zMove = 2;
+  yRotateBeforeInit = Math.PI ;
+  yRotateBeforeInit1 = 0 ;
+  yRotateBefore = 0;
+
+  zMove = 1;
 
   tableCheck = 0;  // 检查是不是在区域中
 
   elements = [];
   objects = [];
-  targets = { table: [], sphere: [], helix: [], grid: [] };
+  targets = { table: [], sphere: [], helix: [], grid: [] , round: [] };
 
+  masterFormat;
 
   camera;
   scene;
+  group;
   renderer;
-  //controls;
+  // controls;
   stats;
 
   error: any;                         // 异常信息
   completed = false;                  // 发送完成
 
+  done = new Audio(environment.media + '/activity/audio/done.wav');
+  warm = new Audio(environment.media + '/activity/audio/default-warm.mp3');
+
   constructor(
     private webSocketService: WebsocketService,
     private activeRoute: ActivatedRoute,
     private userService: UserService,
+    private commandService: CommandService,
   ){
 
   }
 
   ngOnInit() {
 
-    console.log(window.innerWidth + '  ' + window.innerHeight);
+    getAndSavePath(this.activeRoute);
 
-    
+    console.log(window.innerWidth + '  ' + window.innerHeight);
 
     window.addEventListener('resize', () => {
       this.onWindowResize();
     }, false);
 
     this.activeRoute.params.subscribe((para: Params) => {
-      if ( para.id !== undefined) {
-        this.showProgress = true;
-        this.userService.post(baseConfig.activityMyWallSettingsGet, {
-          activityId: para.id,
-        }).subscribe(
-          (data: Result) => {
-            const result = { ...data };
-            if (result.success) {
-              console.log(result.data);
-              this.initData(result.data.total);
-              // has checkin
-              result.data.names.forEach(name => {
-                this.checkinFormat(name);
-              });
-
-              // this.initStats();
-              this.animate();
-              //checkin
-              this.webSocketService.connect(environment.ws + `?id=` + para.id);
-              this.webSocketService.messageSubject.subscribe(
-                data => {
-                    console.log(data);
-                    if (this.entryIndex < this.entryTotal - 1){
-                      this.checkinFormat(data.name);
-                      this.gridFormat();
-                    }
-                },
-                err => this.error = err,
-                () => this.completed = true
-              );
-            } else {
-              this.userService.showError(result);
-            }
-            this.showProgress = false;
-          },
-          (error: Result) => { this.userService.showError(error); this.showProgress = false; },
-        );
-      }else{
-        this.initData(400);
-        // this.initStats();
-        this.animate();
-        this.checkinDemo();
-      }
+      setTimeout(() => {
+        if ( para.id !== undefined) {
+          this.getSetting(para);
+        } else {
+          this.initData(400);
+          // this.initStats();
+          this.animate();
+          this.checkinDemo();
+        }
+        this.commandService.setMessage(2); // hide
+      }, 100);
     });
+    this.warm.loop = true;
+    this.warm.muted = true;
   }
 
+  getSetting(para) {
+    this.showProgress = true;
+    this.commandService.setMessage(1);
+    this.userService.post(baseConfig.activityMyWallSettingsGet, {
+      activityId: para.id,
+    }).subscribe(
+      (data: Result) => {
+        const result = { ...data };
+        if (result.success) {
+          console.log(result.data);
+          this.initData(result.data.total);
+          // has checkin
+          for (let i = 0; i < result.data.names.length; i++)  {
+            this.checkinFormat({name: result.data.names[i], head: result.data.heads[i]});
+          }
+          // this.initStats();
+          this.animate();
+          //checkin
+          this.webSocketService.connect(environment.ws + `?id=` + para.id);
+          this.webSocketService.messageSubject.subscribe(
+            data => {
+                console.log(data);
+                if (this.entryIndex < this.entryTotal - 1){
+                  this.checkinFormat({name: data.name, head: data.head});
+                  this.gridFormat();
+                }
+            },
+            err => this.error = err,
+            () => this.completed = true
+          );
+        } else {
+          this.userService.showError1(result, () => {this.getSetting(para); });
+        }
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.getSetting(para); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
+    );
+  }
+
+  muteDone(e: any) {
+    if (e) {
+      this.done.muted = e.target.checked;
+    }
+  }
+
+  muteWarm(e: any) {
+    if (e) {
+      this.warm.muted = e.target.checked;
+      this.warm.play();
+    }
+  }
   // 获取总的人数
   initData(total) {
     this.entryTotal = total;
@@ -141,29 +181,46 @@ export class CheckinDeomComponent implements OnInit {
     /*
     this.yMoveBefore = this.yMoveBeforeInit10;
     this.tableFormat(10);
+    this.masterFormat = 'table';
     */
 
     this.yMoveBefore = this.yMoveBeforeInit20;
     this.tableFormat(20);
-    
+    this.masterFormat = 'table';
+
+    /*
+    this.roundFormat();
+    this.masterFormat = 'round';
+    this.yRotateBefore = this.yRotateBeforeInit;
+    const R = (this.objects.length / 3) * 130 / (2 * Math.PI);
+    if ( R <= 1200) { // 1000
+      this.yRotateBefore = this.yRotateBeforeInit1;
+    }else {
+      this.yRotateBefore = this.yRotateBeforeInit;
+    }
+    */
   }
   // 模拟
   checkinDemo(){
     setTimeout(() => {
       const name = '马化腾' + (this.entryIndex + 2);
+      let head: string ;
+      if (Math.random() > 0.3) {
+        head = '/demo/head' + Math.ceil(Math.random() * 32) + '.jpg';
+      }
       // 再动画一下
-      this.checkinFormat(name);
+      this.checkinFormat({name, head});
       this.gridFormat();
       if (this.entryIndex < this.elements.length - 1 ) {
         this.checkinDemo();
       } else {
       // this.gridFormat();
       }
-    }, Math.random() * 20000);
+    }, Math.random() * 30000);
   }
- 
+
   // 签到
-  checkinFormat(name) {
+  checkinFormat(entry: Entry) {
       this.entryIndex ++;
       // 显示出来
       const e = this.masterColor.substr(0, this.masterColor.lastIndexOf(','));
@@ -174,14 +231,53 @@ export class CheckinDeomComponent implements OnInit {
       const symbol = document.createElement('div');
       symbol.className = 'symbol';
       symbol.style.color = this.fontColor.substr(0, this.fontColor.lastIndexOf(',')) + ',0.75)';
-      symbol.textContent = name.charAt(0);
+      symbol.textContent = entry.name.charAt(0);
       symbol.style.textShadow = '0 0 10px ' + e + ',0.95)';
       element.appendChild(symbol);
+
+      if (entry.head) {
+        const img = document.createElement('img');
+        img.src = environment.media + '/activity/images' + entry.head;
+        element.appendChild(img);
+      }
+
       const details = document.createElement('div');
       details.className = 'details';
-      details.innerHTML = name.substr(1);
+      if (entry.head) {
+        details.innerHTML = entry.name;
+      } else {
+        details.innerHTML = entry.name.substr(1);
+      }
+
       details.style.color = e + ',0.75)';
       element.appendChild(details);
+
+  }
+
+  roundFormat(){
+
+    this.group.rotation.y = this.yRotateBefore;
+
+    const R = (this.objects.length / 3) * 130 / (2 * Math.PI);
+
+    this.camera.position.x = 0;
+    this.camera.position.y = 0;
+    if ( R <= 1200) { // 1000
+     this.camera.position.z = 2000 + R;
+    } else {
+      this.camera.position.z = 2000 - R;
+    }
+    this.camera.rotation.x = 0;
+
+    for (let i = 0 ; i < this.objects.length; i++) {
+      this.group.remove(this.objects[i]);
+      if (this.targets.round[i].position.z < this.camera.position.z){
+        this.group.add(this.objects[i]);
+      }
+    }
+
+    this.transform(this.targets.round, 1000);
+    this.currentTagets = 'round';
 
   }
 
@@ -198,21 +294,23 @@ export class CheckinDeomComponent implements OnInit {
       }
     }
 
-    
+    this.group.rotation.y = 0;
+    this.group.rotation.x = 0;
+
 
     if (this.tableWidth === 10 ) {
 
       const top = this.camera.position.y + 180 * 3;
       const bottom = this.camera.position.y - 180 * 30;
       for (let i = 0; i < this.objects.length ; i++) {
-        this.scene.remove(this.objects[i]);
+
         if (this.targets.table[i].position.y <= top && this.targets.table[i].position.y >= bottom ){
-          this.scene.add(this.objects[i]);
+          this.group.add(this.objects[i]);
+        } else {
+          this.group.remove(this.objects[i]);
         }
       }
 
-      this.scene.rotation.y = 0;
-      this.scene.rotation.x = 0;
 
       this.camera.rotation.x = - Math.PI * 1 / 3 ;
       this.camera.position.x = 0 ;
@@ -224,43 +322,51 @@ export class CheckinDeomComponent implements OnInit {
       return;
     }
 
-    // if (this.tableWidth === 20 ) 
-    const top = this.camera.position.y + 180 * 9;
-    const bottom = this.camera.position.y - 180 * 9;
-    for (let i = 0; i < this.objects.length ; i++) {
-      this.scene.remove(this.objects[i]);
-      if (this.targets.table[i].position.y <= top && this.targets.table[i].position.y >= bottom ){
-        this.scene.add(this.objects[i]);
-      }
-    }
+    // if (this.tableWidth === 20 )
 
-    // 恢复原状态
     this.camera.position.x = 0;
     this.camera.position.y = this.yMoveBefore;
     this.camera.position.z = 3000;
-    this.camera.target = { x: 0, y: this.yMoveBefore, z: 0 };
     this.camera.rotation.x = 0;
+    this.camera.target = { x: 0, y: this.yMoveBefore, z: 0 };
+
+    const top = this.camera.position.y + 180 * 9;
+    const bottom = this.camera.position.y - 180 * 9;
+    for (let i = 0; i < this.objects.length ; i++) {
+      
+      if (this.targets.table[i].position.y <= top && this.targets.table[i].position.y >= bottom ){
+        this.group.add(this.objects[i]);
+      } else {
+        this.group.remove(this.objects[i]);
+      }
+    }
 
     this.transform(this.targets.table, 1000);
     this.currentTagets = 'table';
   }
 
   gridFormat() {
-    // 场景旋转复位
-    this.scene.rotation.y = 0;
-    this.scene.rotation.x = 0;
 
     // 保存现场
-    if (this.currentTagets === 'table') {
+    if (this.masterFormat === 'table' && this.currentTagets === 'table') {
       this.yMoveBefore = this.camera.position.y;
     }
 
+    if (this.masterFormat === 'round' && this.currentTagets === 'round') {
+      this.yRotateBefore = this.group.rotation.y;
+    }
+    // console.log(this.yRotateBefore);
+
     for (let i = 0; i < this.objects.length ; i++) {
-      this.scene.remove(this.objects[i]);
+      this.group.remove(this.objects[i]);
       if (i <= this.entryIndex  &&  i > this.entryIndex - 50 ){
-        this.scene.add(this.objects[i]);
+        this.group.add(this.objects[i]);
       }
     }
+
+    // 场景旋转复位
+    this.group.rotation.y = 0;
+    this.group.rotation.x = 0;
 
     // 指向当前签到的
     const target = this.targets.grid[this.entryIndex];
@@ -269,6 +375,8 @@ export class CheckinDeomComponent implements OnInit {
     this.camera.position.z = target.position.z + 10;
     this.camera.rotation.x = 0;
     this.camera.target = { x: target.position.x, y: target.position.y, z: target.position.z };
+
+    this.done.play();
 
     this.transform(this.targets.grid, 500); // 第一排是看不到的，因为视角已经移过去了
     this.currentTagets = 'grid';
@@ -279,24 +387,41 @@ export class CheckinDeomComponent implements OnInit {
     // requestAnimationFrame(this.animate); //循环调用函数
     // 以下的写法与上面的写法有明显的区别，以上在js中可以，但在typescript是不可行的。
 
+    if (this.currentTagets === 'round') {
+      this.group.rotation.y = this.group.rotation.y - 0.001;
+      for (let i = 0 ; i < this.objects.length; i++) {
+        const newZ = this.targets.round[i].position.z * Math.cos(this.group.rotation.y)
+                     - this.targets.round[i].position.x * Math.sin(this.group.rotation.y);
+        if ( newZ < this.camera.position.z) {
+          this.group.add(this.objects[i]);
+        } else {
+          this.group.remove(this.objects[i]);
+        }
+      }
+      // console.log(this.group.children.length);
+    }
+
     if (this.currentTagets === 'table') {
 
       if (this.tableWidth === 10) {
 
-        
         const top = this.camera.position.y + 180 * 3;
         const bottom = this.camera.position.y - 180 * 30;
-        for(let i = 0; i< 20;i++){
-          this.scene.remove(this.objects[this.tableCheck]);
+        for(let i = 0; i < 20; i++){
+          
           if (this.targets.table[this.tableCheck].position.y <= top && this.targets.table[this.tableCheck].position.y >= bottom ){
-            this.scene.add(this.objects[this.tableCheck]);
+            this.group.add(this.objects[this.tableCheck]);
+          } else {
+            this.group.remove(this.objects[this.tableCheck]);          
           }
+
           if (this.tableCheck === this.objects.length - 1){
             this.tableCheck = 0;
           } else {
             this.tableCheck++;
           }
         }
+
         this.camera.position.y = this.camera.position.y - this.yMove10;
         // this.camera.target = {x: 0, y: 0, z: this.camera.position.y};
         const row = this.objects.length / this.tableWidth;
@@ -312,9 +437,11 @@ export class CheckinDeomComponent implements OnInit {
         const top = this.camera.position.y + 180 * 9;
         const bottom = this.camera.position.y - 180 * 9;
         for(let i = 0; i< 20;i++){
-          this.scene.remove(this.objects[this.tableCheck]);
+          
           if (this.targets.table[this.tableCheck].position.y <= top && this.targets.table[this.tableCheck].position.y >= bottom ){
-            this.scene.add(this.objects[this.tableCheck]);
+            this.group.add(this.objects[this.tableCheck]);
+          } else {
+            this.group.remove(this.objects[this.tableCheck]);
           }
           if (this.tableCheck === this.objects.length - 1){
             this.tableCheck = 0;
@@ -341,7 +468,13 @@ export class CheckinDeomComponent implements OnInit {
     if (this.currentTagets === 'grid') {
       const target = this.targets.grid[this.entryIndex];
       if (this.camera.position.z - target.position.z > 600) {
-        this.tableFormat(null);
+        this.done.pause();
+        this.done.currentTime = 0; // 回到开始
+        if (this.masterFormat === 'table') {
+          this.tableFormat(null);
+        } else {
+          this.roundFormat();
+        }
       } else {
         this.camera.position.z = this.camera.position.z + this.zMove;
       }
@@ -364,6 +497,7 @@ export class CheckinDeomComponent implements OnInit {
     this.camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 5000);
     this.camera.position.z = 3000;
     this.scene = new THREE.Scene();
+    this.group = new THREE.Group();
     for (let i = 0; i < this.entryTotal; i++) {
       const element = document.createElement('div');
       element.className = 'element';
@@ -372,7 +506,7 @@ export class CheckinDeomComponent implements OnInit {
                                         + ',' + (Math.random() * 0.5 + 0.25) + ')';
       const number = document.createElement('div');
       number.className = 'number';
-      number.textContent = i + 1 + '';
+      number.textContent = 'No.' + (i + 1 ) + '签到';
       number.style.color = this.masterColor.substr(0, this.masterColor.lastIndexOf(',')) + ',0.75)';
       element.appendChild(number);
 
@@ -381,7 +515,7 @@ export class CheckinDeomComponent implements OnInit {
       object.position.x = Math.random() * 4000 - 2000;
       object.position.y = Math.random() * 4000 - 2000;
       object.position.z = Math.random() * 4000 - 2000;
-      this.scene.add(object);
+      this.group.add(object);
       this.objects.push(object);
       //
       const object1 = new THREE.Object3D();
@@ -389,7 +523,7 @@ export class CheckinDeomComponent implements OnInit {
       object1.position.y = - ((Math.floor(i / this.tableWidth) + 1) * 180) + 990;
       this.targets.table.push(object1);
     }
-
+    this.scene.add(this.group);
     // 参考原点
     // this.initXY();
 
@@ -403,6 +537,44 @@ export class CheckinDeomComponent implements OnInit {
       vector.copy(object.position).multiplyScalar(2);
       object.lookAt(vector);
       this.targets.sphere.push(object);
+    }
+
+    // round
+    for (let i = 0, l = this.objects.length; i < l; i = i + 3) {
+      const phi = Math.PI / 2;
+      const theta = 2 * Math.PI / Math.ceil(l / 3) *  Math.trunc(i / 3);
+      const R = (l / 3) * 130 / (2 * Math.PI);
+      const object = new THREE.Object3D();
+      const eye = new THREE.Vector3();
+      eye.x = 0;
+      eye.z = 0;
+      eye.y = 200;
+      object.position.setFromSphericalCoords(R, phi, theta);
+      object.position.y = object.position.y + 200;
+      object.lookAt(eye);
+      if ( R <= 1200) { // 1000
+        object.rotateY(Math.PI);
+      }
+      this.targets.round.push(object);
+
+      eye.y = 0;
+      const object2 = new THREE.Object3D();
+      object2.position.setFromSphericalCoords(R, phi, theta);
+      object2.lookAt(eye);
+      if ( R <= 1200) { // 1000
+        object2.rotateY(Math.PI);
+      }
+      this.targets.round.push(object2);
+
+      eye.y = -200;
+      const object3 = new THREE.Object3D();
+      object3.position.setFromSphericalCoords(R, phi, theta);
+      object3.position.y = object3.position.y - 200;
+      object3.lookAt(eye);
+      if ( R <= 1200) { // 1000
+        object3.rotateY(Math.PI);
+      }
+      this.targets.round.push(object3);
     }
 
     // helix
@@ -491,12 +663,24 @@ export class CheckinDeomComponent implements OnInit {
     });
   }
   onCheck(e: any ) {
-    if ( e === 10) {
+    if ( e === 1) {
+      this.masterFormat = 'table';
       this.yMoveBefore = this.yMoveBeforeInit10;
-    } else {
+      this.tableFormat(10);
+    } else if ( e === 2) {
+      this.masterFormat = 'table';
       this.yMoveBefore = this.yMoveBeforeInit20;
+      this.tableFormat(20);
+    } else {
+      this.masterFormat = 'round';
+      const R = (this.objects.length / 3) * 130 / (2 * Math.PI);
+      if ( R <= 1200) { // 1000
+        this.yRotateBefore = this.yRotateBeforeInit1;
+      } else {
+        this.yRotateBefore = this.yRotateBeforeInit;
+      }
+      this.roundFormat();
     }
-    this.tableFormat(e);
   }
 
   masterColorChange(e: string) {
@@ -539,6 +723,13 @@ export class CheckinDeomComponent implements OnInit {
       that.backImg = 'url(' + this.result + ')';
     };
     reader.readAsDataURL(file);
+  }
+
+  addMusic(event: any) {
+    const file = event.target.files[0];
+    const url = window.URL.createObjectURL(file);
+    this.warm.src = url;
+    this.warm.play();
   }
 
   initXY() {

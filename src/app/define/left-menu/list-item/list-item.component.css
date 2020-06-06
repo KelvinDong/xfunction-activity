@@ -1,0 +1,57 @@
+.amml-item {
+  line-height: 36px;
+  position: relative;
+  cursor: pointer;
+}
+
+.anml-data {
+  width: 100%;
+  text-transform: capitalize;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  height: 36px;
+}
+
+.disabled-amml-item {
+  cursor: not-allowed;
+  opacity: 0.5;
+  text-decoration: none;
+}
+
+.amml-icon-fa {
+  /*font-size: 20px;*/
+}
+
+.label{
+  line-height: 48px;
+}
+
+.amml-icon {
+  line-height: 48px;
+}
+.amml-svg-icon {
+  line-height: 57px;
+  width: 22px;
+  height: 22px;
+}
+.amml-icon-arrow-container {
+  direction: ltr;
+  display: flex;
+  align-items: center;
+}
+div[dir="ltr"] .amml-icon {
+  margin-right: 16px;
+}
+div[dir="ltr"].amml-submenu {
+  padding-left: 26px;
+}
+
+div[dir="rtl"] .amml-icon {
+  margin-left: 16px;
+}
+div[dir="rtl"].amml-submenu {
+  padding-right: 26px;
+}
+
+

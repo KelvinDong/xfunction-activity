@@ -11,6 +11,7 @@ import { MatSnackBar, MatDialog, MatBottomSheet } from '@angular/material';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { getAndSavePath, convertDateFromString, getUserMobile } from 'src/app/ts/base-utils';
 import { QuestionnaireListBottomComponent } from './questionnaire-list-bottom/questionnaire-list-bottom.component';
+import { CommandService } from 'src/app/user/command.service';
 
 @Component({
   selector: 'app-question-naire-list',
@@ -43,6 +44,7 @@ export class QuestionNaireListComponent implements OnInit {
 
   constructor(
     private userService: UserService,
+    private commandService: CommandService,
     private router: Router,
     private region: Region,
     public snackBar: MatSnackBar,
@@ -65,7 +67,11 @@ export class QuestionNaireListComponent implements OnInit {
       this.title = '信息表单列表';
     }
 
-    this.getQuestionnaires();
+    setTimeout(() => {
+      this.commandService.setMessage(3); // 显示
+      this.getQuestionnaires();
+    }, 100);
+
     this.resetWindow();
     window.onresize = () => {
       this.resetWindow();
@@ -90,6 +96,7 @@ export class QuestionNaireListComponent implements OnInit {
 
   getQuestionnaires(){
     this.showProgress = true;
+    this.commandService.setMessage(1);
     const temp = this.queryForm.value;
     temp.offset = this.query.offset;
     temp.limit = this.query.limit;
@@ -114,29 +121,34 @@ export class QuestionNaireListComponent implements OnInit {
             this.query = { offset: this.query.offset + this.query.limit, limit: this.query.limit };
           }
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => {this.getQuestionnaires(); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; }
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.getQuestionnaires(); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      }
     );
   }
 
   addQuestionnaire(){
-    const userMobile = getUserMobile();
-    if (userMobile === null || userMobile === undefined) {
-      this.snackBar.open('请前往“我的”绑定手机号', '', { duration: 5000 });
-    } else {
+    // const userMobile = getUserMobile();
+    // if (userMobile === null || userMobile === undefined) {
+    //   this.snackBar.open('请前往“我的”绑定手机号', '', { duration: 5000 });
+    // } else {
       if (this.questionnaireType === 1 ){
         this.router.navigate([urlDefine.myQuesttionnaire]);
       } else {
         this.router.navigate([urlDefine.myGinfo]);
       }
-    }
+    // }
   }
 
   scrollBottom(e: any) {
-    //console.log(e);
+    // console.log(e);
     let offsetH = e.target.offsetHeight;
     let scrollT = e.target.scrollTop;
     let height = e.target.scrollHeight;
@@ -163,7 +175,7 @@ export class QuestionNaireListComponent implements OnInit {
         case 2:  // 查看
           this.router.navigate([urlDefine.publicQuestionnaire, questionnaire.questionnaireId]);
           break;
-        case 3:   // 清单
+        case 3:   //  清单
           this.router.navigate([urlDefine.questionnaireEntryList, questionnaire.questionnaireId]);
           break;
         default:

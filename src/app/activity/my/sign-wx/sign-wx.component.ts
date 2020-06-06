@@ -66,7 +66,7 @@ export class SignWxComponent implements OnInit {
             }
             this.showProgress = false;
           },
-          (error: Result) => { this.userService.showError(error); this.showProgress = false; }
+          (error: Result) => { this.userService.showError1(error, () => {this.ngOnInit(); }); this.showProgress = false; }
         );
 
       }

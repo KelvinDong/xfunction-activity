@@ -6,13 +6,14 @@ import { DynamicFormComponent } from '../../../define/dynamic-form/dynamic-form/
 import { FormGroup, FormControl, Validators, FormBuilder, FormArray, AbstractControl, FormGroupDirective, NgForm } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
 import { AbstractJsEmitterVisitor } from '@angular/compiler/src/output/abstract_js_emitter';
-import { faArrowLeft, faSave } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faSave, faPlus } from '@fortawesome/free-solid-svg-icons';
 
 import { isNumber, getAndSavePath, forbiddenRegValidator } from '../../../ts/base-utils';
 import { UserService, Result } from 'src/app/user/user.service';
 import { ActivatedRoute, Router, ParamMap, Params } from '@angular/router';
 import { baseConfig, urlDefine, regDefine } from 'src/app/ts/base-config';
 import { MatSnackBar } from '@angular/material';
+import { CommandService } from 'src/app/user/command.service';
 
 @Component({
   selector: 'app-create-form',
@@ -55,6 +56,9 @@ export class CreateFormComponent implements OnInit {
   // 图标
   faArrowLeft = faArrowLeft;
   faSave = faSave;
+  faAdd = faPlus;
+
+  showUP = false;
 
   showProgress = false;
   title = '活动报名表编辑';
@@ -73,6 +77,7 @@ export class CreateFormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
+    private commandService: CommandService,
     private activeRoute: ActivatedRoute,
     private router: Router,
     public snackBar: MatSnackBar,
@@ -94,32 +99,45 @@ export class CreateFormComponent implements OnInit {
 
     // 从服务器获得已经保存的模板，提供编辑
     this.activeRoute.params.subscribe((data: Params) => {
-      if (data.id !== undefined) { // 编辑
-        this.showProgress = true;
-        this.userService.post(baseConfig.formMyGet, { formId: parseInt(data.id, 10) }).subscribe(
-          (data: Result) => {
-            const result = { ...data };
-            if (result.success) {
-
-              // 之前没有加这一行，导制值的变化先处理了页面，但js对象中还没有存在。所以增加强制重新初始化生成对象。  可能是因为值传递给js要慢于页面。
-              // 可以用等于方式，即指针方式不再好，可以试试用push到数据中，会有什么。
-              this.df.rebuild(JSON.parse(result.data.formJson));
-
-              this.questions = JSON.parse(result.data.formJson);
-              this.saveForm.patchValue({
-                formId: result.data.formId,
-                formName: result.data.formName
-              });
-            } else {
-              this.userService.showError(result);
-            }
-            this.showProgress = false;
-          },
-          (error: Result) => { this.userService.showError(error); this.showProgress = false; }
-        );
-      }
+      setTimeout(() => {
+        if (data.id !== undefined) { // 编辑
+            this.getForm(data);
+        }
+        this.commandService.setMessage(3);
+      }, 100);
     });
 
+  }
+
+  getForm(data){
+    this.showProgress = true;
+    this.commandService.setMessage(1);
+    this.userService.post(baseConfig.formMyGet, { formId: parseInt(data.id, 10) }).subscribe(
+      (data: Result) => {
+        const result = { ...data };
+        if (result.success) {
+
+          // 之前没有加这一行，导制值的变化先处理了页面，但js对象中还没有存在。所以增加强制重新初始化生成对象。  可能是因为值传递给js要慢于页面。
+          // 可以用等于方式，即指针方式不再好，可以试试用push到数据中，会有什么。
+          this.df.rebuild(JSON.parse(result.data.formJson));
+
+          this.questions = JSON.parse(result.data.formJson);
+          this.saveForm.patchValue({
+            formId: result.data.formId,
+            formName: result.data.formName
+          });
+        } else {
+          this.userService.showError1(result, () => { this.getForm(data)});
+        }
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
+      (error: Result) => {
+        this.userService.showError1(error, () => { this.getForm(data); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      }
+    );
   }
 
   private initAddForm() {
@@ -302,6 +320,7 @@ export class CreateFormComponent implements OnInit {
       return;
     }
     this.showProgress = true;
+    this.commandService.setMessage(1);
     // 送服务器
     this.saveForm.patchValue({ formJson: JSON.stringify(this.questions) });
     this.userService.post(baseConfig.formMyAddUpdate, this.saveForm.value).subscribe(
@@ -310,11 +329,16 @@ export class CreateFormComponent implements OnInit {
         if (result.success) {
           this.router.navigateByUrl(urlDefine.listFrom);
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => { this.onSaveFormSubmit(); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; },
+      (error: Result) => {
+        this.userService.showError1(error, () => { this.onSaveFormSubmit(); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
     );
 
   }
@@ -359,6 +383,9 @@ export class CreateFormComponent implements OnInit {
     this.addForm.reset();
     this.initAddForm(); // 控件表单重新加载
     
+    this.el.nativeElement.querySelector('.my-body-parent-top').scrollTo(
+      { left: 0, top: this.el.nativeElement.querySelector('.my-body-parent-top').scrollHeight+100, behavior: 'smooth' }
+      );
 
   }
 
@@ -379,6 +406,20 @@ export class CreateFormComponent implements OnInit {
     return resultOption;
   }
 
+  scrollTop() {
+    this.el.nativeElement.querySelector('.my-body-parent-top').scrollTo({ left: 0, top: 0, behavior: 'smooth' });
+  }
 
+  scrollBottom(e: any) {
+    // console.log(e);
+    const offsetH = e.target.offsetHeight;
+    const scrollT = e.target.scrollTop;
+    const height = e.target.scrollHeight;
+    if ( scrollT > height / 5){
+      this.showUP = true;
+    } else {
+      this.showUP = false;
+    }
+  }
 
 }

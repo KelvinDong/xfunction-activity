@@ -1,0 +1,20 @@
+<h3 mat-dialog-title>短信验证码</h3>
+<mat-dialog-content>
+
+    <mat-form-field class="full-width" floatLabel="auto">
+        <input matInput placeholder="手机号" [formControl]="mobile" required>
+    </mat-form-field>
+    <div style="display: flex;">
+        <mat-form-field class="full-width" floatLabel="auto">
+            <input matInput placeholder="短信验证码" [formControl]="code" required>
+        </mat-form-field>
+        <button mat-button color="primary" [disabled]="!mobile.valid || countDown !== 0" (click)="sendSMS()">
+            {{countDownLabel}}</button>
+    </div>
+
+</mat-dialog-content>
+<mat-dialog-actions>
+    <button mat-button mat-dialog-close type="button">关闭</button>
+    <span class="fill-remaining-space"></span>
+    <button mat-raised-button color="primary" [disabled]="!mobile.valid || !code.valid" (click)="login()" type="button">确认</button>
+</mat-dialog-actions>

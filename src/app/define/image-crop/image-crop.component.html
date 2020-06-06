@@ -1,0 +1,24 @@
+<h3 mat-dialog-title>裁图</h3>
+<mat-dialog-content>
+
+     <img [src]="croppedImage" />
+    <image-cropper
+        [imageChangedEvent]="imageChangedEvent"
+        [maintainAspectRatio]="true"
+        [aspectRatio]="1 / 1"
+        [resizeToWidth]="128"
+        format="png"
+        (imageCropped)="imageCropped($event)"
+        (imageLoaded)="imageLoaded()"
+        (cropperReady)="cropperReady()"
+        (loadImageFailed)="loadImageFailed()"
+    ></image-cropper>
+
+   
+
+</mat-dialog-content>
+<mat-dialog-actions>
+    <button mat-button mat-dialog-close type="button">关闭</button>
+    <span class="fill-remaining-space"></span>
+    <button mat-raised-button color="primary" (click)="submit()" type="button">提交</button>
+</mat-dialog-actions>

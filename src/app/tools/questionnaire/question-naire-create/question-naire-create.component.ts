@@ -18,6 +18,7 @@ import * as _moment from 'moment';
 import { MomentDateAdapter } from '@angular/material-moment-adapter';
 import { environment } from 'src/environments/environment';
 import { QuestionnaireAddElementComponent } from './questionnaire-add-element/questionnaire-add-element.component';
+import { CommandService } from 'src/app/user/command.service';
 // tslint:disable-next-line:no-duplicate-imports
 // import {default as _rollupMoment} from 'moment';
 // const moment = _rollupMoment || _moment;
@@ -94,6 +95,7 @@ export class QuestionNaireCreateComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
+    private commandService: CommandService,
     private activeRoute: ActivatedRoute,
     public dialog: MatDialog,
     private router: Router,
@@ -154,32 +156,46 @@ export class QuestionNaireCreateComponent implements OnInit {
     // 从服务器获得已经保存的模板，提供编辑
     this.activeRoute.params.subscribe((data: Params) => {
       if (data.id !== undefined) { // 编辑
-        this.showProgress = true;
-        this.userService.post(baseConfig.questionnaireFormGet, { questionnaireId: parseInt(data.id, 10) }).subscribe(
-          (data: Result) => {
-            const result = { ...data };
-            if (result.success) {
-              // bug hack
-              this.questions = JSON.parse(result.data.questionnaireJson);
-              this.df.rebuild(this.questions);
-
-              this.questionnaire = result.data;
-              const datetime = this.questionnaire.questionnaireExpired.split(' ');
-              this.questionnaire.questionnaireExpiredDate = moment(datetime[0]);
-              this.questionnaire.questionnaireExpiredTime = datetime[1];
-              this.headPicSrc = environment.media + '/activity/images' + this.questionnaire.questionnairePic;
-
-              this.questionnaireForm.patchValue(this.questionnaire);
-            } else {
-              this.userService.showError(result);
-            }
-            this.showProgress = false;
-          },
-          (error: Result) => { this.userService.showError(error); this.showProgress = false; }
-        );
+        setTimeout(() => {
+          this.getForm(data);
+          this.commandService.setMessage(3);
+        }, 100);
+        
       }
     });
 
+  }
+
+  getForm(data){
+    this.showProgress = true;
+    this.commandService.setMessage(1);
+    this.userService.post(baseConfig.questionnaireFormGet, { questionnaireId: parseInt(data.id, 10) }).subscribe(
+      (data: Result) => {
+        const result = { ...data };
+        if (result.success) {
+          // bug hack
+          this.questions = JSON.parse(result.data.questionnaireJson);
+          this.df.rebuild(this.questions);
+
+          this.questionnaire = result.data;
+          const datetime = this.questionnaire.questionnaireExpired.split(' ');
+          this.questionnaire.questionnaireExpiredDate = moment(datetime[0]);
+          this.questionnaire.questionnaireExpiredTime = datetime[1];
+          this.headPicSrc = environment.media + '/activity/images' + this.questionnaire.questionnairePic;
+
+          this.questionnaireForm.patchValue(this.questionnaire);
+        } else {
+          this.userService.showError1(result, () => {this.getForm(data); });
+          }
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+        },
+        (error: Result) => {
+          this.userService.showError1(error, () => {this.getForm(data); });
+          this.showProgress = false;
+          this.commandService.setMessage(0);
+        }
+      );
   }
 
   resetWindow() {
@@ -225,6 +241,7 @@ export class QuestionNaireCreateComponent implements OnInit {
       postData.append('questionnaireId', that.questionnaire.questionnaireId);
     }
     that.showProgress = true;
+    that.commandService.setMessage(1);
     that.userService.postFormData(baseConfig.questionnaireUpPic, postData).subscribe(
       (data: Result) => {
         const result = { ...data };
@@ -233,18 +250,18 @@ export class QuestionNaireCreateComponent implements OnInit {
           that.headPicSrc = environment.media + '/activity/images' + result.data.questionnairePic;
           console.log(that.headPicSrc);
         } else {
-          that.userService.showError(result);
+          that.userService.showError1(result, () => {that.upHeadPic(bob, that); });
         }
         that.showProgress = false;
+        that.commandService.setMessage(0);
       },
-      (error: Result) => { that.userService.showError(error); that.showProgress = false; }
+      (error: Result) => {
+        that.userService.showError1(error, () => {that.upHeadPic(bob, that); });
+        that.showProgress = false;
+        that.commandService.setMessage(0);
+      }
     );
   }
-
-
-
-
-
 
 
   onQuestionnaireFormSubmit() {
@@ -254,6 +271,7 @@ export class QuestionNaireCreateComponent implements OnInit {
       return;
     }
     this.showProgress = true;
+    this.commandService.setMessage(1);
     // 送服务器
     const resultValue = this.questionnaireForm.value;
     resultValue.questionnaireJson = JSON.stringify(this.questions);
@@ -270,11 +288,16 @@ export class QuestionNaireCreateComponent implements OnInit {
           // this.router.navigateByUrl(urlDefine.listQuestionnaireFrom);
           this.snackBar.open('提交成功', '', { duration: 3000 });
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => {this.onQuestionnaireFormSubmit(); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; },
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.onQuestionnaireFormSubmit(); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
     );
 
   }

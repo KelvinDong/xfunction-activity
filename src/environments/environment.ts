@@ -5,6 +5,7 @@
 export const environment = {
   production: false,
   api: 'http://localhost:8090',
+  //api: 'https://api.xfunction.cn',
   media: 'http://localhost:8090',
   web: 'http://localhost:4200',
   ws: 'ws://localhost:8090/socket'

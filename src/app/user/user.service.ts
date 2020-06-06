@@ -1,16 +1,17 @@
 import { Injectable, OnInit } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
-import { Observable, of, pipe, throwError } from 'rxjs';
+import { Observable, of, pipe, throwError, Subject } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { Router, ActivatedRoute} from '@angular/router';
 
 // 引入自定久久
 import { baseConfig, urlDefine} from '../ts/base-config';
-import { getUserToken } from '../ts/base-utils';
+import { getUserToken, getUserMobile } from '../ts/base-utils';
 import { environment } from '../../environments/environment';
 import wx from 'weixin-jsapi';
 // 引入组件
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar, MatDialog } from '@angular/material';
+import { LoginDialogComponent } from '../define/login-dialog/login-dialog.component';
 
 
 /**
@@ -42,6 +43,7 @@ export interface User{
   userMobile: string;
   userMail: string;
   accessToken: string;
+  userAvatar: string;
 }
 
 export interface PageQuery {
@@ -54,6 +56,8 @@ export interface PageQuery {
 })
 export class UserService   {
 
+ 
+
   getHttpOptions = {
     headers: new HttpHeaders({
       'Content-Type':  'application/json'
@@ -63,10 +67,13 @@ export class UserService   {
 
   constructor(
     private http: HttpClient,
+    public dialog: MatDialog,
     public snackBar: MatSnackBar,
   ) {
     // console.log('UserService constructor Ed.');
   }
+
+  
 
   getAuthImage(): Observable<Result> {
     // console.log('getAuthImage()' + baseConfig.api + baseConfig.getAuthImage);
@@ -129,12 +136,22 @@ export class UserService   {
     // console.log('this class name is UserService.');
   }
 
-  showError(error: Result) {
-    // console.log('showError');    
+  showError1(error: Result, callback: any) {
+    // console.log('showError');
     if (error.code === '4000' || error.code === '4001') {  // Token 问题
-      this.snackBar.open(error.msg + ',' + (error.errorMsg  === undefined ? '' : error.errorMsg), '', { duration: 3000 });
-      window.localStorage.clear();
-      window.location.href = urlDefine.loginUrl;
+      // this.snackBar.open(error.msg + ',' + (error.errorMsg  === undefined ? '' : error.errorMsg), '', { duration: 3000 });
+      const dialogRef = this.dialog.open(LoginDialogComponent, {
+        // height: '400px',
+        // width: '90%',
+        data: { userMoble: getUserMobile() }
+      });
+      dialogRef.afterClosed().subscribe((resultData: any) => {
+        if (resultData) {
+          callback();
+        }
+      });
+      window.localStorage.removeItem('userInfo');
+      // window.location.href = urlDefine.loginUrl;
     } else if (error.code === '400' || error.code === '500' || error.code === '501') { // exception
       alert(error.msg + ',' + (error.errorMsg  === undefined ? '' : error.errorMsg) );
     } else {
@@ -142,7 +159,7 @@ export class UserService   {
     }
   }
 
-  
+
   // 以下为private
   private handleError(error: HttpErrorResponse) {
 
@@ -215,7 +232,7 @@ export class UserService   {
           });
         }
       },
-      (error: Result) => { this.showError(error); }
+      (error: Result) => { this.showError1(error, () => {this.weixinShare(object); }); }
     );
   }
 }

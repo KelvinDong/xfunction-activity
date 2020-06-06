@@ -1,0 +1,55 @@
+.amml-item {
+  line-height: 48px;
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+}
+
+.anml-data {
+  width: 100%;
+  text-transform: capitalize;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.amml-icon-fa {
+  font-size: 20px;
+}
+
+.amml-icon {
+  line-height: 20px;
+}
+
+.active {
+  color: #1976d2;
+}
+
+div[dir="ltr"] .amml-icon {
+  margin-right: 15px;
+}
+div[dir="ltr"] .amml-submenu {
+  margin-left: 16px;
+}
+
+div[dir="rtl"] .amml-icon {
+  margin-left: 15px;
+}
+div[dir="rtl"] .amml-submenu {
+  margin-right: 16px;
+}
+
+
+:host ::ng-deep .mat-list-base .mat-list-item{
+  font-size: 0.8rem;
+}
+:host ::ng-deep .mat-list-base .mat-list-item, .mat-list-base .mat-list-option{
+  height: 36px;
+}
+:host ::ng-deep .mat-list-base .mat-list-item .mat-list-item-content, .mat-list-base .mat-list-option .mat-list-item-content{
+  padding:0 20px;
+}
+
+:host ::ng-deep .material-icons{
+  font-size: 1rem;
+  width: auto;
+}

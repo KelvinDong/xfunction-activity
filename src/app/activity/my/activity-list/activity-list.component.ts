@@ -14,6 +14,7 @@ import { convertDateFromString, getAndSavePath, getUserMobile } from 'src/app/ts
 import { Region } from 'src/app/ts/region';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { ActivityListDialogComponent } from './activity-list-dialog/activity-list-dialog.component';
+import { CommandService } from 'src/app/user/command.service';
 
 @Component({
   selector: 'app-activity-list',
@@ -56,6 +57,7 @@ export class ActivityListComponent implements OnInit {
 
   constructor(
     private userService: UserService,
+    private commandService: CommandService,
     private router: Router,
     private region: Region,
     public snackBar: MatSnackBar,
@@ -74,7 +76,11 @@ export class ActivityListComponent implements OnInit {
       activityApplyDict: [],
       showExpired: [true]
     });
-    this.getActivities();
+    setTimeout(() => {
+      this.getActivities();
+      this.commandService.setMessage(3);
+    }, 100);
+    
     this.resetWindow();
     window.onresize = () => {
       this.resetWindow();
@@ -98,6 +104,7 @@ export class ActivityListComponent implements OnInit {
   }
   getActivities() {
     this.showProgress = true;
+    this.commandService.setMessage(1);
     const temp = this.queryForm.value;
     temp.offset = this.query.offset;
     temp.limit = this.query.limit;
@@ -157,11 +164,16 @@ export class ActivityListComponent implements OnInit {
             this.query = { offset: this.query.offset + this.query.limit, limit: this.query.limit };
           }
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => {this.getActivities(); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; }
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.getActivities(); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      }
     );
   }
 
@@ -193,35 +205,7 @@ export class ActivityListComponent implements OnInit {
           this.activityUp(null, activity);
           break;
         case 4: // 下架 前提上架状态，变为私有的
-          this.showProgress = true;
-          this.userService.post(baseConfig.activityMyApply, { activityId: activity.activityId, myApplyId: 3 }).subscribe(
-            (data: Result) => {
-              const result = { ...data };
-              if (result.success) {
-                activity.activityOrderDict = 0;
-                activity.activityOrderLabel = '私有';  // TODO 懒了，需要数据字典
-                activity.activityApplyDict = '3';
-                activity.activityApplyLabel = '成功'; // TODO 懒了，需要数据字典
-                activity.activityTitle = activity.activityTemp.activityTitle;
-                activity.activityStart = activity.activityTemp.activityStart;
-                activity.activityEnd = activity.activityTemp.activityEnd;
-                activity.entryEnd = activity.activityTemp.entryEnd;
-                activity.activityArea = activity.activityTemp.activityArea;
-                activity.activityAddress = activity.activityTemp.activityAddress;
-                activity.activityPic = activity.activityTemp.activityPic;
-                activity.activityTags = activity.activityTemp.activityTags;
-                if (convertDateFromString(activity.activityEnd) < new Date()) {  // 实际时间，而不是临时表中的结束时间
-                  activity.expired = true;
-                } else {
-                  activity.expired = false;
-                }
-              } else {
-                this.userService.showError(result);
-              }
-              this.showProgress = false;
-            },
-            (error: Result) => { this.userService.showError(error); this.showProgress = false; }
-          );
+          this.activityDown(activity);
           break;
         case 2: // 查看 无前提
           this.router.navigate([urlDefine.publicActivity, activity.activityId]);
@@ -249,9 +233,48 @@ export class ActivityListComponent implements OnInit {
     });
   }
 
+  activityDown(activity){
+    this.showProgress = true;
+    this.commandService.setMessage(1);
+    this.userService.post(baseConfig.activityMyApply, { activityId: activity.activityId, myApplyId: 3 }).subscribe(
+      (data: Result) => {
+        const result = { ...data };
+        if (result.success) {
+          activity.activityOrderDict = 0;
+          activity.activityOrderLabel = '私有';  // TODO 懒了，需要数据字典
+          activity.activityApplyDict = '3';
+          activity.activityApplyLabel = '成功'; // TODO 懒了，需要数据字典
+          activity.activityTitle = activity.activityTemp.activityTitle;
+          activity.activityStart = activity.activityTemp.activityStart;
+          activity.activityEnd = activity.activityTemp.activityEnd;
+          activity.entryEnd = activity.activityTemp.entryEnd;
+          activity.activityArea = activity.activityTemp.activityArea;
+          activity.activityAddress = activity.activityTemp.activityAddress;
+          activity.activityPic = activity.activityTemp.activityPic;
+          activity.activityTags = activity.activityTemp.activityTags;
+          if (convertDateFromString(activity.activityEnd) < new Date()) {  // 实际时间，而不是临时表中的结束时间
+            activity.expired = true;
+          } else {
+            activity.expired = false;
+          }
+        } else {
+          this.userService.showError1(result, () => {this.activityDown(activity); });
+        }
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.activityDown(activity); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      }
+    );
+  }
+
   activityUp(e: any, activity: any) {
     if (e) { e.stopPropagation(); }
     this.showProgress = true;
+    this.commandService.setMessage(1);
     this.userService.post(baseConfig.activityMyApply, { activityId: activity.activityId, myApplyId: 2 }).subscribe(
       (data: Result) => {
         const result = { ...data };
@@ -274,11 +297,16 @@ export class ActivityListComponent implements OnInit {
             activity.expired = false;
           }
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => { this.activityUp(e, activity); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; }
+      (error: Result) => {
+        this.userService.showError1(error, () => { this.activityUp(e, activity); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      }
     );
   }
 

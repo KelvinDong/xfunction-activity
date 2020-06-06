@@ -29,6 +29,14 @@
         color: rgba(255,255,255,0.75);
         text-shadow: 0 0 10px rgba(0,255,255,0.95);
     }
+    .element img {
+        position: absolute;
+        top: 30px;
+        left: 15px;
+        right: 15px;
+        width: 90px;
+        height: 90px;
+    }
     .element .details {
         position: absolute;
         bottom: 10px;

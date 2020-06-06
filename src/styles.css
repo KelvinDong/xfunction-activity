@@ -21,15 +21,34 @@ body {
        Every toolbar row uses a flexbox row layout. */
     flex: 1 1 auto;
   }
+.my-body-parent{
+  width:100%;
+  height: calc( 100% - 70px);
+  margin-top: 70px;
+  overflow: auto;
+}
+
+.my-body-parent-top{
+  width:100%;
+  height: calc( 100% );
+  overflow: auto;
+}
+
 .my-body{
   max-width: 800px;
   margin: 0 auto;
-  height: 100%;
-  overflow: auto;
+  /*height: 100%;
+  overflow: auto;*/
 }
+
+.search-toolbar{
+  max-width:800px ;font-size: 14px; margin: 70px auto 0 auto; background: #FFFFFF;
+    color: #000000;
+}
+
 .my-toolbar{
   width: 100%;
-  height: 56px;
+  height: 64px;
   display:flex;
   flex-direction:row;
   flex-wrap: nowrap;
@@ -73,6 +92,14 @@ body {
     border-radius: 50%;
     flex-shrink: 0;
     object-fit: cover;
+}
+
+.my-circle-avatar-big{
+  height: 80px;
+  width: 80px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  object-fit: cover;
 }
 
 .my-box-avatar{

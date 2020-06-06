@@ -82,11 +82,11 @@ export class RegisterIndexComponent implements OnInit {
             this.router.navigateByUrl(urlDefine.loginUrl);
           }, 1000);
         } else {
-          this.userService.showError(result);
+          // this.userService.showError(result);
           this.reset();
         }
       },
-      (error: Result) => this.userService.showError(error)
+      // (error: Result) => this.userService.showError(error)
     );
   }
   login() {

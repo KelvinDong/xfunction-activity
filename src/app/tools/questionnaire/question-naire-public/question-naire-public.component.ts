@@ -15,6 +15,7 @@ import { getAndSavePath, isExplorer, convertDateFromString } from 'src/app/ts/ba
 import { DynamicFormComponent } from 'src/app/define/dynamic-form/dynamic-form/dynamic-form.component';
 import html2canvas from 'html2canvas';
 import { DetailShareDialogComponent } from './detail-share-dialog/detail-share-dialog.component';
+import { CommandService } from 'src/app/user/command.service';
 
 @Component({
   selector: 'app-question-naire-public',
@@ -62,6 +63,7 @@ export class QuestionNairePublicComponent implements OnInit {
     public dialog: MatDialog,
     public snackBar: MatSnackBar,
     private userService: UserService,
+    private commandService: CommandService,
     private region: Region,
     private el: ElementRef,
   ) { }
@@ -71,48 +73,58 @@ export class QuestionNairePublicComponent implements OnInit {
     // 从服务器获得已经保存，提供编辑
     this.activeRoute.params.subscribe((data: Params) => {
       if (data.id !== undefined) { // 编辑
-        this.showProgress = true;
-        this.userService.post(baseConfig.questionnairePublic, { questionnaireId: parseInt(data.id, 10) }).subscribe(
-          (data: Result) => {
-            const result = { ...data };
-            if (result.success) {
-              this.questionnaire = result.data;
-
-              this.title = this.questionnaire.questionnaireName;
-              if (convertDateFromString(this.questionnaire.questionnaireExpired) < new Date()) {
-                this.questionnaire.expired = true;
-              } else {
-                this.questionnaire.expired = false;  // 没有上架
-              }
-              this.questions = JSON.parse(this.questionnaire.questionnaireJson);
-              // 准备微信分享内容
-              if (isExplorer('micromessenger')) {
-                this.userService.weixinShare({
-                  title: this.questionnaire.questionnaireName,
-                  desc: this.questionnaire.questionnairePre,
-                  link: window.location.href,
-                  imgUrl: this.baseUrl + this.questionnaire.questionnairePic
-                });
-              }
-
-            } else {
-              this.userService.showError(result);
-            }
-          },
-          (error: Result) => { this.userService.showError(error); this.showProgress = false; },
-          () => { this.showProgress = false; }
-        );
+        setTimeout(() => {
+          this.getQuestionnaire(data);
+          this.commandService.setMessage(2);
+        }, 100);
       } else {
         this.snackBar.open('错误：无法找到', '', { duration: 3000 });
-
       }
-
     });
 
     this.resetWindow();
     window.onresize = () => {
       this.resetWindow();
     };
+  }
+
+  getQuestionnaire(data){
+    this.showProgress = true;
+    this.commandService.setMessage(1);
+    this.userService.post(baseConfig.questionnairePublic, { questionnaireId: parseInt(data.id, 10) }).subscribe(
+      (data: Result) => {
+        const result = { ...data };
+        if (result.success) {
+          this.questionnaire = result.data;
+
+          this.title = this.questionnaire.questionnaireName;
+          if (convertDateFromString(this.questionnaire.questionnaireExpired) < new Date()) {
+            this.questionnaire.expired = true;
+          } else {
+            this.questionnaire.expired = false;  // 没有上架
+          }
+          this.questions = JSON.parse(this.questionnaire.questionnaireJson);
+          // 准备微信分享内容
+          if (isExplorer('micromessenger')) {
+            this.userService.weixinShare({
+              title: this.questionnaire.questionnaireName,
+              desc: this.questionnaire.questionnairePre,
+              link: window.location.href,
+              imgUrl: this.baseUrl + this.questionnaire.questionnairePic
+            });
+          }
+        } else {
+          this.userService.showError1(result, () => {this.getQuestionnaire(data); });
+        }
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
+      (error: Result) => { 
+        this.userService.showError1(error, () => {this.getQuestionnaire(data); });
+        this.showProgress = false;
+        this.commandService.setMessage(0); },
+      () => { this.showProgress = false; this.commandService.setMessage(0); }
+    );
   }
 
   resetWindow() {
@@ -125,7 +137,7 @@ export class QuestionNairePublicComponent implements OnInit {
   }
 
   scrollTop() {
-    this.el.nativeElement.querySelector('.my-body').scrollTo({ left: 0, top: 0, behavior: 'smooth' });
+    this.el.nativeElement.querySelector('.my-body-parent-top').scrollTo({ left: 0, top: 0, behavior: 'smooth' });
   }
 
 
@@ -148,6 +160,7 @@ export class QuestionNairePublicComponent implements OnInit {
       return;
     }
     this.showProgress = true;
+    this.commandService.setMessage(1);
     this.userService.post(baseConfig.questionnaireAddEntry, {
       questionnaireId: this.questionnaire.questionnaireId,
       entryContent: e, move: confirm.move, action: confirm.action
@@ -158,11 +171,16 @@ export class QuestionNairePublicComponent implements OnInit {
           this.entryRight = false;
           this.snackBar.open('提交成功！', '', { duration: 3000 });
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => {this.entry(e, confirm); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; }
+      (error: Result) => { 
+        this.userService.showError1(error, () => {this.entry(e, confirm); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      }
     );
 
   }
@@ -172,7 +190,7 @@ export class QuestionNairePublicComponent implements OnInit {
     const offsetH = e.target.offsetHeight;
     const scrollT = e.target.scrollTop;
     const height = e.target.scrollHeight;
-    if ( scrollT > height / 3){
+    if ( scrollT > height / 6){
       this.showUP = true;
     } else {
       this.showUP = false;
@@ -182,6 +200,7 @@ export class QuestionNairePublicComponent implements OnInit {
   share() {
     this.sharing = true;
     this.showProgress = true;
+    this.commandService.setMessage(1);
     setTimeout(() => {
       let dialogRef: any;
       const shareContent = this.el.nativeElement.querySelector('.screenPrint');
@@ -195,6 +214,7 @@ export class QuestionNairePublicComponent implements OnInit {
         dialogRef.afterClosed().subscribe((resultData: any) => {
           this.sharing = false;
           this.showProgress = false;
+          this.commandService.setMessage(0);
         });
       }).catch();
     }, 1000);

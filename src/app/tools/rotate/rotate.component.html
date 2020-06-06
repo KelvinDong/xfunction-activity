@@ -1,10 +1,17 @@
 <div style="position: fixed; top:0;right: 0;z-index: 100;">
+  
+  
   <app-color-wrapper [(color)]="backColor"></app-color-wrapper>
 
   <div style="margin-top: -2px;   width: 21px; cursor: pointer; border: 1px solid black;
       margin-right: 1px;height: 14px; font-size: 12px;
       background: white; color:black; text-align: center;" (click)="setting($event)" >
       S
+  </div>
+  <input name="doneMute"  type="checkbox" (click)="muteDone($event)"/>
+  <div style="text-align: center; margin-right: 5px;">
+    <fa-icon [icon]="faHome" [inverse]="true" size="sm" 
+                [routerLink]="['/'+urlDefine.indexUrl]"></fa-icon>
   </div>
 </div> 
 <div [style.background]="backColor" style="width:100%;height:100%;position: relative;" >
@@ -20,7 +27,7 @@
           box-shadow: -1px 1px 2px 1px #ca1518AA;
           box-shadow: 1px -1px 2px 1px #ca1518AA;
           display: flex; justify-content: center;align-items: center;">
-            <h1>{{indexAward}}</h1>
+            <h3>{{indexAward}}</h3>
             
          </div>
     </div>

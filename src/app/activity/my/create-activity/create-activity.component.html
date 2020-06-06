@@ -1,158 +1,155 @@
-<app-master-head [title]="title" [showProgress]="showProgress"
-    style="position: fixed; top: 0; width:100% ;z-index: 100 "></app-master-head>
+<div class="my-body-parent">
+    <div class="my-body">
+        <mat-horizontal-stepper linear="true" labelPosition="bottom" #stepper>
+            <mat-step editable="false" [completed]="firstCompleted">
+                <form [formGroup]="firstFormGroup" (ngSubmit)="onFirstFormSubmit()">
+                    <ng-template matStepLabel>基本信息</ng-template>
+                    <mat-form-field class="full-width" floatLabel="auto">
+                        <input matInput placeholder="名称" formControlName="activityTitle" required>
+                        <mat-error *ngIf="activityTitle.invalid">
+                            活动字数6-50位
+                        </mat-error>
+                    </mat-form-field>
+                    <mat-form-field style="width:50%" floatLabel="auto">
+                        <input matInput placeholder="开始日期" readonly  (click)="startPicker.open()" [matDatepicker]="startPicker" formControlName="activityStartDate" required>
+                        <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+                        <mat-datepicker touchUi #startPicker disabled="false"></mat-datepicker>
+                        <mat-error *ngIf="activityStartDate.invalid">
+                            日期格式：2019-09-10
+                        </mat-error>
+                    </mat-form-field>
+                    <mat-form-field style="width:calc(50% - 16px);margin-left: 16px;" floatLabel="auto" >
+                        <input type="time" matInput placeholder="时间" formControlName="activityStartTime" required >                    
+                        <mat-error *ngIf="activityStartTime.invalid">
+                            时间格式：20:00
+                        </mat-error>
+                    </mat-form-field>
 
+                    <mat-form-field style="width:50%" floatLabel="auto">
+                        <input matInput placeholder="结束日期" readonly  (click)="endPicker.open()" [matDatepicker]="endPicker" formControlName="activityEndDate" required>
+                        <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+                        <mat-datepicker touchUi #endPicker disabled="false"></mat-datepicker>
+                        <mat-error *ngIf="activityEndDate.invalid">
+                            日期格式：2019-09-10
+                        </mat-error>
+                    </mat-form-field>
+                    <mat-form-field style="width:calc(50% - 16px);margin-left: 16px;" floatLabel="auto" >
+                        <input type="time" matInput placeholder="时间" formControlName="activityEndTime" required >                    
+                        <mat-error *ngIf="activityEndTime.invalid">
+                            时间格式：20:00
+                        </mat-error>
+                    </mat-form-field>
+                    
+                    <mat-form-field style="width:50%" floatLabel="auto">
+                        <input matInput placeholder="报名结束" readonly  (click)="entryEndPicker.open()" [matDatepicker]="entryEndPicker"  formControlName="entryEndDate" required>
+                        <mat-datepicker-toggle matSuffix [for]="entryEndPicker"></mat-datepicker-toggle>
+                        <mat-datepicker touchUi #entryEndPicker disabled="false"></mat-datepicker>
+                        <mat-error *ngIf="entryEndDate.invalid">
+                            日期格式：2019-09-10
+                        </mat-error>
+                    </mat-form-field>
+                    <mat-form-field style="width:calc(50% - 16px);margin-left: 16px;" floatLabel="auto" >
+                        <input type="time" matInput placeholder="时间" formControlName="entryEndTime" required >                    
+                        <mat-error *ngIf="entryEndTime.invalid">
+                            时间格式：20:00
+                        </mat-error>
+                    </mat-form-field>
 
-<div class="my-body">
-    <div style="height: 56px"></div>
-    <mat-horizontal-stepper linear="true" labelPosition="bottom" #stepper>
-        <mat-step editable="false" [completed]="firstCompleted">
-            <form [formGroup]="firstFormGroup" (ngSubmit)="onFirstFormSubmit()">
-                <ng-template matStepLabel>基本信息</ng-template>
-                <mat-form-field class="full-width" floatLabel="auto">
-                    <input matInput placeholder="名称" formControlName="activityTitle" required>
-                    <mat-error *ngIf="activityTitle.invalid">
-                        活动字数6-50位
-                    </mat-error>
-                </mat-form-field>
-                <mat-form-field style="width:50%" floatLabel="auto">
-                    <input matInput placeholder="开始日期" readonly  (click)="startPicker.open()" [matDatepicker]="startPicker" formControlName="activityStartDate" required>
-                    <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
-                    <mat-datepicker touchUi #startPicker disabled="false"></mat-datepicker>
-                    <mat-error *ngIf="activityStartDate.invalid">
-                        日期格式：2019-09-10
-                    </mat-error>
-                </mat-form-field>
-                <mat-form-field style="width:calc(50% - 16px);margin-left: 16px;" floatLabel="auto" >
-                    <input type="time" matInput placeholder="时间" formControlName="activityStartTime" required >                    
-                    <mat-error *ngIf="activityStartTime.invalid">
-                        时间格式：20:00
-                    </mat-error>
-                </mat-form-field>
+                    <mat-form-field style="width:50%" floatLabel="auto">
+                        <mat-select placeholder="省" formControlName="province" required
+                            (selectionChange)="provinceChange($event)">
+                            <mat-option [value]="pro.value" *ngFor="let pro of province">{{pro.label}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    <mat-form-field style="width:50%" floatLabel="auto">
+                        <mat-select placeholder="市" formControlName="activityArea" required>
+                            <mat-option [value]="city.value" *ngFor="let city of cities">{{city.label}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    <mat-form-field class="full-width" floatLabel="auto">
+                        <input matInput placeholder="详细地址" formControlName="activityAddress" required>
+                        <mat-error *ngIf="activityAddress.invalid">
+                            格式：2-125个字符
+                        </mat-error>
+                    </mat-form-field>
+                    <mat-form-field style="width:100%" floatLabel="auto">
+                        <mat-select placeholder="报名模板" formControlName="formId" required>
+                            <mat-option *ngFor="let form of forms" [value]="form.formId">{{form.formName}}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    <mat-form-field class="full-width">
+                        <mat-chip-list #tagList>
+                            <mat-chip *ngFor="let tag of tags" [selectable]="selectable" [removable]="removable"
+                                (removed)="removeTag(tag)">
+                                {{tag}}
+                                <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
+                            </mat-chip>
+                            <input placeholder="标签(逗号或回车添加)" [matChipInputFor]="tagList"
+                                [matChipInputSeparatorKeyCodes]="separatorKeysCodes" [matChipInputAddOnBlur]="addOnBlur"
+                                (matChipInputTokenEnd)="addTag($event)">
+                        </mat-chip-list>
+                    </mat-form-field>
+                    <div>
+                        <button mat-raised-button color="primary" style="float:right"
+                            [disabled]="firstFormGroup.invalid">下一步</button>
+                    </div>
 
-                <mat-form-field style="width:50%" floatLabel="auto">
-                    <input matInput placeholder="结束日期" readonly  (click)="endPicker.open()" [matDatepicker]="endPicker" formControlName="activityEndDate" required>
-                    <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
-                    <mat-datepicker touchUi #endPicker disabled="false"></mat-datepicker>
-                    <mat-error *ngIf="activityEndDate.invalid">
-                        日期格式：2019-09-10
-                    </mat-error>
-                </mat-form-field>
-                <mat-form-field style="width:calc(50% - 16px);margin-left: 16px;" floatLabel="auto" >
-                    <input type="time" matInput placeholder="时间" formControlName="activityEndTime" required >                    
-                    <mat-error *ngIf="activityEndTime.invalid">
-                        时间格式：20:00
-                    </mat-error>
-                </mat-form-field>
-                
-                <mat-form-field style="width:50%" floatLabel="auto">
-                    <input matInput placeholder="报名结束" readonly  (click)="entryEndPicker.open()" [matDatepicker]="entryEndPicker"  formControlName="entryEndDate" required>
-                    <mat-datepicker-toggle matSuffix [for]="entryEndPicker"></mat-datepicker-toggle>
-                    <mat-datepicker touchUi #entryEndPicker disabled="false"></mat-datepicker>
-                    <mat-error *ngIf="entryEndDate.invalid">
-                        日期格式：2019-09-10
-                    </mat-error>
-                </mat-form-field>
-                <mat-form-field style="width:calc(50% - 16px);margin-left: 16px;" floatLabel="auto" >
-                    <input type="time" matInput placeholder="时间" formControlName="entryEndTime" required >                    
-                    <mat-error *ngIf="entryEndTime.invalid">
-                        时间格式：20:00
-                    </mat-error>
-                </mat-form-field>
+                </form>
 
-                <mat-form-field style="width:50%" floatLabel="auto">
-                    <mat-select placeholder="省" formControlName="province" required
-                        (selectionChange)="provinceChange($event)">
-                        <mat-option [value]="pro.value" *ngFor="let pro of province">{{pro.label}}</mat-option>
-                    </mat-select>
-                </mat-form-field>
-                <mat-form-field style="width:50%" floatLabel="auto">
-                    <mat-select placeholder="市" formControlName="activityArea" required>
-                        <mat-option [value]="city.value" *ngFor="let city of cities">{{city.label}}</mat-option>
-                    </mat-select>
-                </mat-form-field>
-                <mat-form-field class="full-width" floatLabel="auto">
-                    <input matInput placeholder="详细地址" formControlName="activityAddress" required>
-                    <mat-error *ngIf="activityAddress.invalid">
-                        格式：2-125个字符
-                    </mat-error>
-                </mat-form-field>
-                <mat-form-field style="width:100%" floatLabel="auto">
-                    <mat-select placeholder="报名模板" formControlName="formId" required>
-                        <mat-option *ngFor="let form of forms" [value]="form.formId">{{form.formName}}
-                        </mat-option>
-                    </mat-select>
-                </mat-form-field>
-                <mat-form-field class="full-width">
-                    <mat-chip-list #tagList>
-                        <mat-chip *ngFor="let tag of tags" [selectable]="selectable" [removable]="removable"
-                            (removed)="removeTag(tag)">
-                            {{tag}}
-                            <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
-                        </mat-chip>
-                        <input placeholder="标签(逗号或回车添加)" [matChipInputFor]="tagList"
-                            [matChipInputSeparatorKeyCodes]="separatorKeysCodes" [matChipInputAddOnBlur]="addOnBlur"
-                            (matChipInputTokenEnd)="addTag($event)">
-                    </mat-chip-list>
-                </mat-form-field>
-                <div>
-                    <button mat-raised-button color="primary" style="float:right"
-                        [disabled]="firstFormGroup.invalid">下一步</button>
-                </div>
+            </mat-step>
+            <mat-step editable="false" [completed]="secondCompleted">
+                <form [formGroup]="secondFormGroup" (ngSubmit)="onSecondFormSubmit()">
+                    <ng-template matStepLabel>详细信息</ng-template>
+                    <label for="headpic">
+                        <img style="width: 100%;
+                            object-fit: cover;" [src]="headPicSrc" [style.height]="headWidth"
+                            onerror="this.src='assets/images/default-picture.png'" title="活动题图">
+                    </label>
+                    <input id="headpic" type="file" accept="image/*" hidden (change)="headPic($event)">
+                    <input hidden formControlName="activityPic">                
+                    <div class="editor" style="width: 100% ; min-height: 350px;  overflow: auto;"  >
+                        <!-- 富文本编辑器-->                    
+                    </div>
+                    <div style="margin-top:10px">
+                        <button mat-button type="button"></button>                    
+                        <button mat-raised-button color="primary" style="float:right"
+                            [disabled]="secondFormGroup.invalid">下一步</button>
+                    </div>                  
 
-            </form>
+                </form>
 
-        </mat-step>
-        <mat-step editable="false" [completed]="secondCompleted">
-            <form [formGroup]="secondFormGroup" (ngSubmit)="onSecondFormSubmit()">
-                <ng-template matStepLabel>详细信息</ng-template>
-                <label for="headpic">
-                    <img style="width: 100%;
-                        object-fit: cover;" [src]="headPicSrc" [style.height]="headWidth"
-                        onerror="this.src='assets/images/default-picture.png'" title="活动题图">
-                </label>
-                <input id="headpic" type="file" accept="image/*" hidden (change)="headPic($event)">
-                <input hidden formControlName="activityPic">                
-                <div class="editor" style="width: 100% ; min-height: 350px;  overflow: auto;"  >
-                    <!-- 富文本编辑器-->                    
-                </div>
+            </mat-step>
+            <mat-step>
+                <ng-template matStepLabel>票种</ng-template>
+                <mat-list>
+                    <mat-list-item (click)="showTicketBottom(ticket,$event)" *ngFor="let ticket of tickets, let i = index">
+
+                        <span matListIcon>{{i+1}}</span>
+
+                        <h3 matLine>{{ticket.ticketName}}({{ticket.ticketSum}}张）</h3>
+                        <p matLine>
+                            <span> {{ticket.ticketRemark}}</span>
+                        </p>
+                        <mat-slide-toggle [checked]="ticket.ticketStatus" (change)="slideChangr(ticket)"
+                            (click)="$event.stopPropagation();">启用</mat-slide-toggle>
+                    </mat-list-item>
+
+                </mat-list>
                 <div style="margin-top:10px">
-                    <button mat-button type="button"></button>                    
-                    <button mat-raised-button color="primary" style="float:right"
-                        [disabled]="secondFormGroup.invalid">下一步</button>
-                </div>                  
+                    <button mat-button color="primary" (click)="showAddEditTicket(undefined)">新增票种</button>
+                    
+                    <a mat-raised-button color="primary" style="float:right" [disabled]="tickets.length === 0 "
+                        [routerLink]="['/'+urlDefine.listActivity]">完成</a>
+                </div>
+                <dl>
+                        <dt>注意</dt>                    
+                        <dd>请确保至少有一个票种处于“启用”状态！</dd>
+                    
+                        <dd>完成编辑后针对公开活动，需手动“同步”公开！</dd>
+                </dl>
 
-            </form>
-
-        </mat-step>
-        <mat-step>
-            <ng-template matStepLabel>票种</ng-template>
-            <mat-list>
-                <mat-list-item (click)="showTicketBottom(ticket,$event)" *ngFor="let ticket of tickets, let i = index">
-
-                    <span matListIcon>{{i+1}}</span>
-
-                    <h3 matLine>{{ticket.ticketName}}({{ticket.ticketSum}}张）</h3>
-                    <p matLine>
-                        <span> {{ticket.ticketRemark}}</span>
-                    </p>
-                    <mat-slide-toggle [checked]="ticket.ticketStatus" (change)="slideChangr(ticket)"
-                        (click)="$event.stopPropagation();">启用</mat-slide-toggle>
-                </mat-list-item>
-
-            </mat-list>
-            <div style="margin-top:10px">
-                <button mat-button color="primary" (click)="showAddEditTicket(undefined)">新增票种</button>
-                
-                <a mat-raised-button color="primary" style="float:right" [disabled]="tickets.length === 0 "
-                    [routerLink]="['/'+urlDefine.listActivity]">完成</a>
-            </div>
-            <dl>
-                    <dt>注意</dt>                    
-                    <dd>请确保至少有一个票种处于“启用”状态！</dd>
-                   
-                    <dd>完成编辑后针对公开活动，需手动“同步”公开！</dd>
-            </dl>
-
-        </mat-step>
-    </mat-horizontal-stepper>
+            </mat-step>
+        </mat-horizontal-stepper>
+    </div>
 </div>

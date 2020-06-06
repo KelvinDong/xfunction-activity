@@ -1,53 +1,53 @@
-<app-master-head [title]="title" [showProgress]="showProgress"
-    style="position: fixed; top: 0; width:100% ;z-index: 100 "></app-master-head>
-
-
-<div class="my-body" style="border: 0px solid red" (scroll)="scrollBottom($event)">
-    <div style="height: 56px"></div>
-
-    <div class="my-card" *ngFor="let entry of entries, let i = index" (click)="showBottom(entry)">
-            <div style="position: relative;">
-                <img class="my-card-top-img" [style.height]="headWidth" onerror="this.src='assets/images/default-picture.png'"
-                    [src]="baseUrl + entry.activity.activityPic">
-                <div style="position: absolute; top:-4px;right:30px">
-                    <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="entry.activity.expired">
-                        <fa-icon [icon]="faBookmark" size="3x" style="color: gray"></fa-icon>
-                        <fa-layers-text content="结束" style="color: white;" transform="shrink-4 right-8 up-5">
-                        </fa-layers-text>
-                    </fa-layers>
-                    <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="entry.checkin">
-                            <fa-icon [icon]="faBookmark" size="3x" style="color: rgb(6, 240, 6)"></fa-icon>
-                            <fa-layers-text content="签到" style="color: white;" transform="shrink-4 right-8 up-5">
+<div class="my-body-parent" (scroll)="scrollBottom($event)">
+    <div class="my-body">
+        <div class="my-card" *ngFor="let entry of entries, let i = index" (click)="showBottom(entry)">
+                <div style="position: relative;">
+                    <img class="my-card-top-img" [style.height]="headWidth" onerror="this.src='assets/images/default-picture.png'"
+                        [src]="baseUrl + entry.activity.activityPic">
+                    <div style="position: absolute; top:-4px;right:30px">
+                        <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="entry.activity.expired">
+                            <fa-icon [icon]="faBookmark" size="3x" style="color: gray"></fa-icon>
+                            <fa-layers-text content="结束" style="color: white;" transform="shrink-4 right-8 up-5">
                             </fa-layers-text>
                         </fa-layers>
-                    <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="entry.cancel">
-                        <fa-icon [icon]="faBookmark" size="3x" style="color: rgb(243, 207, 6)"></fa-icon>
-                        <fa-layers-text content="取消" style="color: black;" transform="shrink-4 right-8 up-5">
-                        </fa-layers-text>
-                    </fa-layers>
+                        <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="entry.checkin">
+                                <fa-icon [icon]="faBookmark" size="3x" style="color: rgb(6, 240, 6)"></fa-icon>
+                                <fa-layers-text content="签到" style="color: white;" transform="shrink-4 right-8 up-5">
+                                </fa-layers-text>
+                            </fa-layers>
+                        <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="entry.cancel">
+                            <fa-icon [icon]="faBookmark" size="3x" style="color: rgb(243, 207, 6)"></fa-icon>
+                            <fa-layers-text content="取消" style="color: black;" transform="shrink-4 right-8 up-5">
+                            </fa-layers-text>
+                        </fa-layers>
+                    </div>
+                    <mat-chip-list style="left: 10px;position: absolute;bottom: 10px">
+                        <mat-chip *ngFor=" let tag of entry.activity.activityTags.split(',')">{{tag}}</mat-chip>
+                    </mat-chip-list>
                 </div>
-                <mat-chip-list style="left: 10px;position: absolute;bottom: 10px">
-                    <mat-chip *ngFor=" let tag of entry.activity.activityTags.split(',')">{{tag}}</mat-chip>
-                </mat-chip-list>
+                <div class="my-single-line">
+                    {{entry.activity.activityTitle}} 
+                </div>
+                <div class="my-single-line">
+                    <fa-icon [icon]="faCalendarAlt" size="sm"></fa-icon> {{entry.activity.activityStart}} ~
+                    {{entry.activity.activityEnd}}
+                </div>
+                <div class="my-single-line">
+                    <fa-icon style="margin-right:4px;" [icon]="faMapMarkerAlt" size="sm"></fa-icon>{{entry.activity.sctivityArea}}
+                    {{entry.activity.activityAddress}}
+                </div>
+                <div class="my-single-line">
+                        报名时间：{{entry.entryCreate}}
+                </div>
+                <div class="my-single-line">
+                        票种：{{entry.ticket.ticketName}}
+                </div>
+                
             </div>
-            <div class="my-single-line">
-                {{entry.activity.activityTitle}} 
+            <div *ngIf="!entries || entries.length === 0 " style="display: flex;justify-content: center;align-items: center; height: 100%; flex-direction: column;">
+                <img src="/assets/images/nocontent.png" style="max-width: 50%; margin-top: 64px;">
+                    <p style="display: block;">空空如也，请积极参加活动哦</p>
             </div>
-            <div class="my-single-line">
-                <fa-icon [icon]="faCalendarAlt" size="sm"></fa-icon> {{entry.activity.activityStart}} ~
-                {{entry.activity.activityEnd}}
-            </div>
-            <div class="my-single-line">
-                <fa-icon style="margin-right:4px;" [icon]="faMapMarkerAlt" size="sm"></fa-icon>{{entry.activity.sctivityArea}}
-                {{entry.activity.activityAddress}}
-            </div>
-            <div class="my-single-line">
-                    报名时间：{{entry.entryCreate}}
-            </div>
-            <div class="my-single-line">
-                    票种：{{entry.ticket.ticketName}}
-            </div>
-            
-        </div>
 
+    </div>
 </div>

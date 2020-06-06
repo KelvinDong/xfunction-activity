@@ -10,6 +10,7 @@ import { ShareModule } from './share.module';
 
 
 import { TeeestComponent } from './teeest/teeest.component';
+import { SidebarComponent } from './learn/sidebar/sidebar.component';
 
 
 
@@ -18,6 +19,7 @@ import { TeeestComponent } from './teeest/teeest.component';
     AppComponent,
 
     TeeestComponent,
+    SidebarComponent,
 
   ],
   imports: [

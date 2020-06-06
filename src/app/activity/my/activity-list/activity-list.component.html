@@ -1,121 +1,124 @@
-<app-master-head [title]="title" [showProgress]="showProgress"
-    style="position: fixed; top: 0; width:100% ;z-index: 100 "></app-master-head>
 
-<mat-toolbar color="primary"  style="position: fixed; top: 56px; width:100% ;z-index: 100 ;font-size: 14px;">
-    <span >{{ total ?  '总数:' + total : ''}}</span>
-    <span style="flex: 1 1 auto;"></span>
-    <form [formGroup]="queryForm">
+<div style="width: 100%;overflow-y: scroll; ">
+    <mat-toolbar class="search-toolbar">
+        <span >{{ total ?  '总数:' + total : ''}}</span>
+        <span style="flex: 1 1 auto;"></span>
+        <form [formGroup]="queryForm">
 
-        <mat-checkbox class="my-right-left-10" formControlName="showExpired" (change)="queryChange()">未过期
-        </mat-checkbox>
+            <mat-checkbox class="my-right-left-10" formControlName="showExpired" (change)="queryChange()">未过期
+            </mat-checkbox>
 
-        <mat-form-field floatLabel="never" style="width:80px; ">
-            <mat-select placeholder="公开状态" formControlName="activityOrderDict" (selectionChange)="queryChange()">
-                <mat-option value="">全部</mat-option>
-                <mat-option *ngFor="let dict of activityOrderDict" [value]="dict.dictValue">{{dict.dictLabel}}
-                </mat-option>
-            </mat-select>
-        </mat-form-field>
-        <!--
-        <mat-form-field floatLabel="never" style="width:80px">
-            <mat-select placeholder="编辑/审核" formControlName="activityApplyDict" (selectionChange)="queryChange()">
-                <mat-option value="">全部</mat-option>
-                <mat-option *ngFor="let dict of activityApplyDict" [value]="dict.dictValue">{{dict.dictLabel}}
-                </mat-option>
-            </mat-select>
-        </mat-form-field>
-        -->
-    </form>
-    <button mat-icon-button  class="my-right-left-16" (click)="addActivity()">
-        <mat-icon>add</mat-icon>
-    </button>
-</mat-toolbar>
-
-<div class="my-body" style="border: 0px solid red" (scroll)="scrollBottom($event)">
-    <div style="height: 112px"></div>
-    <div class="my-card" *ngFor="let activity of activities, let i = index" (click)="showBottom(activity)">
-        <div style="position: relative;">
-            <img class="my-card-top-img" [style.height]="headWidth" onerror="this.src='assets/images/default-picture.png'"
-                [src]="baseUrl+activity.activityPic">
-            <div style="position: absolute; top:-4px;right:30px">
-                <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="activity.expired">
-                    <fa-icon [icon]="faBookmark" size="3x" style="color: gray"></fa-icon>
-                    <fa-layers-text content="过期" style="color: white;" transform="shrink-4 right-8 up-5">
-                    </fa-layers-text>
-                </fa-layers>
-                <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="activity.newPublish">
-                    <fa-icon [icon]="faBookmark" size="3x" style="color: greenyellow"></fa-icon>
-                    <fa-layers-text content="最新" style="color: black;" transform="shrink-4 right-8 up-5">
-                    </fa-layers-text>
-                </fa-layers>
-                <fa-layers [fixedWidth]="true" style="margin-left: 30px">
-                    <fa-icon [icon]="faBookmark" size="3x" style="color: red"></fa-icon>
-                    <fa-layers-text [content]="activity.activityOrderLabel" style="color: white;"
-                        transform="shrink-4 right-8 up-5">
-                    </fa-layers-text>
-                </fa-layers>
-                <!--
-                <fa-layers [fixedWidth]="true" style="margin-left: 30px">
-                    <fa-icon [icon]="faBookmark" size="3x" style="color: rgb(22, 6, 245)"></fa-icon>
-                    <fa-layers-text [content]="activity.activityApplyLabel" style="color: white;"
-                        transform="shrink-4 right-8 up-5">
-                    </fa-layers-text>
-                </fa-layers>
-                -->
+            <mat-form-field floatLabel="never" style="width:80px; ">
+                <mat-select placeholder="公开状态" formControlName="activityOrderDict" (selectionChange)="queryChange()">
+                    <mat-option value="">全部</mat-option>
+                    <mat-option *ngFor="let dict of activityOrderDict" [value]="dict.dictValue">{{dict.dictLabel}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+            <!--
+            <mat-form-field floatLabel="never" style="width:80px">
+                <mat-select placeholder="编辑/审核" formControlName="activityApplyDict" (selectionChange)="queryChange()">
+                    <mat-option value="">全部</mat-option>
+                    <mat-option *ngFor="let dict of activityApplyDict" [value]="dict.dictValue">{{dict.dictLabel}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+            -->
+        </form>
+        <button mat-icon-button  class="my-right-left-16" (click)="addActivity()">
+            <mat-icon>add</mat-icon>
+        </button>
+    </mat-toolbar>
+</div>
+<div class="my-body-parent-top" style="height: calc( 100% - 70px - 64px );overflow-y: scroll " (scroll)="scrollBottom($event)">
+    <div class="my-body"  >
+        <div class="my-card" *ngFor="let activity of activities, let i = index" (click)="showBottom(activity)">
+            <div style="position: relative;">
+                <img class="my-card-top-img" [style.height]="headWidth" onerror="this.src='assets/images/default-picture.png'"
+                    [src]="baseUrl+activity.activityPic">
+                <div style="position: absolute; top:-4px;right:30px">
+                    <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="activity.expired">
+                        <fa-icon [icon]="faBookmark" size="3x" style="color: gray"></fa-icon>
+                        <fa-layers-text content="过期" style="color: white;" transform="shrink-4 right-8 up-5">
+                        </fa-layers-text>
+                    </fa-layers>
+                    <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="activity.newPublish">
+                        <fa-icon [icon]="faBookmark" size="3x" style="color: greenyellow"></fa-icon>
+                        <fa-layers-text content="最新" style="color: black;" transform="shrink-4 right-8 up-5">
+                        </fa-layers-text>
+                    </fa-layers>
+                    <fa-layers [fixedWidth]="true" style="margin-left: 30px">
+                        <fa-icon [icon]="faBookmark" size="3x" style="color: red"></fa-icon>
+                        <fa-layers-text [content]="activity.activityOrderLabel" style="color: white;"
+                            transform="shrink-4 right-8 up-5">
+                        </fa-layers-text>
+                    </fa-layers>
+                    <!--
+                    <fa-layers [fixedWidth]="true" style="margin-left: 30px">
+                        <fa-icon [icon]="faBookmark" size="3x" style="color: rgb(22, 6, 245)"></fa-icon>
+                        <fa-layers-text [content]="activity.activityApplyLabel" style="color: white;"
+                            transform="shrink-4 right-8 up-5">
+                        </fa-layers-text>
+                    </fa-layers>
+                    -->
+                </div>
+                <mat-chip-list style="left: 10px;position: absolute;bottom: 10px">
+                    <mat-chip *ngFor=" let tag of activity.activityTags.split(',')">{{tag}}</mat-chip>
+                </mat-chip-list>
             </div>
-            <mat-chip-list style="left: 10px;position: absolute;bottom: 10px">
-                <mat-chip *ngFor=" let tag of activity.activityTags.split(',')">{{tag}}</mat-chip>
-            </mat-chip-list>
-        </div>
-        <div class="my-single-line">
-            {{activity.activityTitle}} [{{activity.activityId}}]
-        </div>
-        <div class="my-single-line">
-            <fa-icon [icon]="faCalendarAlt" size="sm"></fa-icon> {{activity.activityStart}} ~
-            {{activity.activityEnd}}
-        </div>
-        <div class="my-single-line">
-            <fa-icon [icon]="faIdCard" size="sm"></fa-icon> {{activity.entryEnd}} 截止
-        </div>
-
-        <div class="my-single-line">
-            <fa-icon style="margin-right:4px;" [icon]="faMapMarkerAlt" size="sm"></fa-icon>{{activity.activityArea}}
-            {{activity.activityAddress}}
-        </div>
-
-        <div *ngIf="activity.activityOrderDict > 0  &&  activity.activityApplyDict !== '3'"
-            style="display: flex;">
-            <button mat-button color="primary"
-                [disabled]="!(activity.activityApplyDict === '0' && activity.activityPic!=null  &&  activity.tickets.length > 0 &&  !activity.expired)" 
-                (click)="activityUp($event,activity)">同步</button><!--服务端暂没有审核，忽略审核中，审核失败-->
-            <div class="my-right-left-16" style="flex-grow: 1;width: 100px">
-                <div class="my-single-line">
-                    {{activity.activityTemp.activityTitle}}
-                </div>
-                <div class="my-single-line">
-                    <fa-icon [icon]="faCalendarAlt" size="sm"></fa-icon> {{activity.activityTemp.activityStart}} ~
-                    {{activity.activityTemp.activityEnd}}
-                </div>
-                <div class="my-single-line">
-                    <fa-icon [icon]="faIdCard" size="sm"></fa-icon> {{activity.activityTemp.entryEnd}} 截止
-                </div>
-        
-                <div class="my-single-line">
-                    <fa-icon style="margin-right:4px;" [icon]="faMapMarkerAlt" size="sm"></fa-icon>{{activity.activityTemp.activityArea}}
-                    {{activity.activityTemp.activityAddress}}
-                </div>
+            <div class="my-single-line">
+                {{activity.activityTitle}} [{{activity.activityId}}]
             </div>
+            <div class="my-single-line">
+                <fa-icon [icon]="faCalendarAlt" size="sm"></fa-icon> {{activity.activityStart}} ~
+                {{activity.activityEnd}}
+            </div>
+            <div class="my-single-line">
+                <fa-icon [icon]="faIdCard" size="sm"></fa-icon> {{activity.entryEnd}} 截止
+            </div>
+
+            <div class="my-single-line">
+                <fa-icon style="margin-right:4px;" [icon]="faMapMarkerAlt" size="sm"></fa-icon>{{activity.activityArea}}
+                {{activity.activityAddress}}
+            </div>
+
+            <div *ngIf="activity.activityOrderDict > 0  &&  activity.activityApplyDict !== '3'"
+                style="display: flex;">
+                <button mat-button color="primary"
+                    [disabled]="!(activity.activityApplyDict === '0' && activity.activityPic!=null  &&  activity.tickets.length > 0 &&  !activity.expired)" 
+                    (click)="activityUp($event,activity)">同步</button><!--服务端暂没有审核，忽略审核中，审核失败-->
+                <div class="my-right-left-16" style="flex-grow: 1;width: 100px">
+                    <div class="my-single-line">
+                        {{activity.activityTemp.activityTitle}}
+                    </div>
+                    <div class="my-single-line">
+                        <fa-icon [icon]="faCalendarAlt" size="sm"></fa-icon> {{activity.activityTemp.activityStart}} ~
+                        {{activity.activityTemp.activityEnd}}
+                    </div>
+                    <div class="my-single-line">
+                        <fa-icon [icon]="faIdCard" size="sm"></fa-icon> {{activity.activityTemp.entryEnd}} 截止
+                    </div>
             
+                    <div class="my-single-line">
+                        <fa-icon style="margin-right:4px;" [icon]="faMapMarkerAlt" size="sm"></fa-icon>{{activity.activityTemp.activityArea}}
+                        {{activity.activityTemp.activityAddress}}
+                    </div>
+                </div>
+                
+            </div>
+
+            <mat-divider></mat-divider>
+            <div class="my-single-line">
+                报名/访问：{{activity.sold}}人/{{activity.entryVisit}}次
+            </div>
+            <div class="my-single-line">
+                创建/修改：{{activity.activityCreate}} / {{activity.activityUpdate}}
+            </div>
+        </div>
+        <div *ngIf="!activities || activities.length === 0 " style="display: flex;justify-content: center;align-items: center; height: 100%; flex-direction: column;">
+            <img src="/assets/images/nocontent.png" style="max-width: 50%; margin-top: 64px;">
+                <p style="display: block;">空空如也，请点击+创建活动</p>
         </div>
 
-        <mat-divider></mat-divider>
-        <div class="my-single-line">
-            报名/访问：{{activity.sold}}人/{{activity.entryVisit}}次
-        </div>
-        <div class="my-single-line">
-            创建/修改：{{activity.activityCreate}} / {{activity.activityUpdate}}
-        </div>
     </div>
-
-
 </div>

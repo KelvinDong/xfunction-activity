@@ -1,171 +1,167 @@
-<div style="position: fixed; top:40%;left:calc(50% - 50px) ;z-index:100;" *ngIf="showProgress">
-    <mat-spinner></mat-spinner>
-</div>
-
-
-
-<div class="my-body" (scroll)="scrollBottom($event)">
-    <div class="screenPrint">
-        <div style="position: relative">
-            <!-- 
-            一般就是跨域的图片，直接引用是可以用的，不存在跨域的问题。    
-            这个为什么要加v=1,是确保这个地方的图片从服务器重取一份，且是通过跨域来获得的，这样保证之后的canvas中跨域时，是取得这里的缓存
-            但这里还是存在一个问题在加入v=1,原有的nginx配置不能实现跨域，所在修改了nginx配置，这样所有图片都能获取跨域信息了
-            也就没有必要加 crossorigin="anonymous" -->
-            <a [href]="baseUrl + activity.activityPic"><img style="width:100%;object-fit: cover;" [style.height]="headWidth" [src]="baseUrl + activity.activityPic"
-            onerror="this.src='assets/images/default-picture.png'"></a>
-
-            <div style="position: absolute; top:12px;right:60px">
-                <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="activity.expired">
-                    <fa-icon [icon]="faBookmark" size="3x" style="color: gray"></fa-icon>
-                    <fa-layers-text content="过期" style="color: white;" transform="shrink-4 right-8 up-5">
-                    </fa-layers-text>
-                </fa-layers>
-                <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="activity.newPublish">
-                    <fa-icon [icon]="faBookmark" size="3x" style="color: greenyellow"></fa-icon>
-                    <fa-layers-text content="最新" style="color: black;" transform="shrink-4 right-8 up-5">
-                    </fa-layers-text>
-                </fa-layers>
-                <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="activity.recommand">
-                    <fa-icon [icon]="faBookmark" size="3x" style="color: red"></fa-icon>
-                    <fa-layers-text content="推荐" style="color: white;" transform="shrink-4 right-8 up-5">
-                    </fa-layers-text>
-                </fa-layers>
-            </div>
-            <div *ngIf="sharing" style="position: absolute; top:0px;right:16px;padding: 4px;background: white;">
-                <qrcode
-                    [qrdata]="webUrl + '/' + urlDefine.publicActivity + '/' +activity.activityId"
-                    [size]="125" [level]="'M'">
-                </qrcode>
-            </div>
-
-            <fa-icon [icon]="faHome" [inverse]="true" size="2x" style="left: 8px;position: absolute;bottom: 10px;"
-                [routerLink]="['/'+urlDefine.indexUrl]"></fa-icon>
-            <mat-chip-list style="left: 60px;position: absolute;bottom: 10px">
-                <mat-chip *ngFor=" let tag of activity.activityTags.split(',')">{{tag}}</mat-chip>
-            </mat-chip-list>
-        </div>
-
-        <h3 class="my-right-left-10" style=" margin-bottom: 0">
-            {{activity.activityTitle}}
-        </h3>
-        <div class="my-right-left-10 my-text-remark"> 访问量：{{activity.entryVisit}}</div>
-        <!--因为截图的问题 fa 图标显示 有问题，换回material-->
-        <div class="my-card">
-            <div class="my-more-line">
-                <i class="material-icons" style="font-size:16px">place</i> :
-                <span>{{activity.activityArea}} {{activity.activityAddress}}</span>
-            </div>
-            <div class="my-single-line">
-               
-                <i class="material-icons" style="font-size:16px">date_range</i> :
-                {{activity.activityStart}} ~ {{activity.activityEnd}}
-            </div>
-            <div class="my-single-line">
-                <i class="material-icons" style="font-size:16px">block</i> :
-                {{activity.entryEnd}} 报名截止
-            </div>
-        </div>
-    </div>
-
-
-    <h4 class="my-right-left-10">活动票/报名</h4>
-    <mat-accordion class="headers-align">
-        <mat-expansion-panel hideToggle class="my-right-left-10" *ngFor="let ticket of tickets">
-            <mat-expansion-panel-header style="font-size: 14px;">
-                <mat-panel-title>
-                    {{ticket.ticketName}}
-                </mat-panel-title>
-                <mat-panel-description>
-                    < {{ticket.ticketSum-ticket.ticketSold}}张 
-                        <fa-icon [icon]="faDoorOpen" size="lg"
-                            *ngIf="(ticket.ticketSum-ticket.ticketSold) > 0">
-                        </fa-icon>
-                        <fa-icon [icon]="faDoorClosed" size="lg" *ngIf="(ticket.ticketSum-ticket.ticketSold) <= 0 ">
-                        </fa-icon>
-                </mat-panel-description>
-
-            </mat-expansion-panel-header>
-            <p>
-                {{ticket.ticketRemark}}
-            </p>
-            <mat-action-row>
-                <button mat-raised-button color="primary" (click)="entry(ticket)"
-                    [disabled]="activity.expired || (ticket.ticketSum-ticket.ticketSold) <= 0  || !entryRight">
-                    报名</button>
-            </mat-action-row>
-        </mat-expansion-panel>
-
-    </mat-accordion>
-
-    <h4 class="my-right-left-10">活动内容</h4>
-    <div class="ql-container ql-snow" style="border-width: 0; height:auto;background: white;">
-        <div class="ql-editor" [innerHTML]="activity.activityContent">
-        </div>
-    </div>
-
-    <h4 class="my-right-left-10">主办方</h4>
-    <div class="my-card" (click)="toSponsor($event)">
-        <div style="display: flex; align-items:flex-start;">
+<div class="my-body-parent-top" (scroll)="scrollBottom($event)">
+    <div class="my-body" >
+        <div class="screenPrint">
             <div style="position: relative">
-                <img class="my-circle-avatar" onerror="this.src='assets/images/default-head.png'"
-                    [src]="baseUrl+sponsor.sponsorLogo">
-                <!--
-                <fa-layers [fixedWidth]="true" style="position: absolute;top:-8px; left: -8px;">
-                    <fa-icon [icon]="faCircle" style="color:yellow;"></fa-icon>
-                    <fa-layers-text content="V" style="color: red;" transform="shrink-4"></fa-layers-text>
-                </fa-layers>
-                -->
+                <!-- 
+                一般就是跨域的图片，直接引用是可以用的，不存在跨域的问题。    
+                这个为什么要加v=1,是确保这个地方的图片从服务器重取一份，且是通过跨域来获得的，这样保证之后的canvas中跨域时，是取得这里的缓存
+                但这里还是存在一个问题在加入v=1,原有的nginx配置不能实现跨域，所在修改了nginx配置，这样所有图片都能获取跨域信息了
+                也就没有必要加 crossorigin="anonymous" -->
+                <a [href]="baseUrl + activity.activityPic"><img style="width:100%;object-fit: cover;" [style.height]="headWidth" [src]="baseUrl + activity.activityPic"
+                onerror="this.src='assets/images/default-picture.png'"></a>
+
+                <div style="position: absolute; top:12px;right:60px">
+                    <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="activity.expired">
+                        <fa-icon [icon]="faBookmark" size="3x" style="color: gray"></fa-icon>
+                        <fa-layers-text content="过期" style="color: white;" transform="shrink-4 right-8 up-5">
+                        </fa-layers-text>
+                    </fa-layers>
+                    <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="activity.newPublish">
+                        <fa-icon [icon]="faBookmark" size="3x" style="color: greenyellow"></fa-icon>
+                        <fa-layers-text content="最新" style="color: black;" transform="shrink-4 right-8 up-5">
+                        </fa-layers-text>
+                    </fa-layers>
+                    <fa-layers [fixedWidth]="true" style="margin-left: 30px" *ngIf="activity.recommand">
+                        <fa-icon [icon]="faBookmark" size="3x" style="color: red"></fa-icon>
+                        <fa-layers-text content="推荐" style="color: white;" transform="shrink-4 right-8 up-5">
+                        </fa-layers-text>
+                    </fa-layers>
+                </div>
+                <div *ngIf="sharing" style="position: absolute; top:0px;right:16px;padding: 4px;background: white;">
+                    <qrcode
+                        [qrdata]="webUrl + '/' + urlDefine.publicActivity + '/' +activity.activityId"
+                        [size]="125" [level]="'M'">
+                    </qrcode>
+                </div>
+
+                <fa-icon [icon]="faHome" [inverse]="true" size="2x" style="left: 8px;position: absolute;bottom: 10px;"
+                    [routerLink]="['/'+urlDefine.indexUrl]"></fa-icon>
+                <mat-chip-list style="left: 60px;position: absolute;bottom: 10px">
+                    <mat-chip *ngFor=" let tag of activity.activityTags.split(',')">{{tag}}</mat-chip>
+                </mat-chip-list>
             </div>
-            <div class="my-right-left-16" style="flex-grow: 1;width: 100px">
-                <!--width要加，否则my-single-line中的省略号无效-->
+
+            <h3 class="my-right-left-10" style=" margin-bottom: 0">
+                {{activity.activityTitle}}
+            </h3>
+            <div class="my-right-left-10 my-text-remark"> 访问量：{{activity.entryVisit}}</div>
+            <!--因为截图的问题 fa 图标显示 有问题，换回material-->
+            <div class="my-card">
+                <div class="my-more-line">
+                    <i class="material-icons" style="font-size:16px">place</i> :
+                    <span>{{activity.activityArea}} {{activity.activityAddress}}</span>
+                </div>
                 <div class="my-single-line">
-                    {{sponsor.sponsorName}}
+                
+                    <i class="material-icons" style="font-size:16px">date_range</i> :
+                    {{activity.activityStart}} ~ {{activity.activityEnd}}
                 </div>
-                <div class="my-text-remark"> 
-                    {{sponsor.sponsorIntro}}
+                <div class="my-single-line">
+                    <i class="material-icons" style="font-size:16px">block</i> :
+                    {{activity.entryEnd}} 报名截止
                 </div>
             </div>
-
-            <button mat-icon-button (click)="likeSponsor($event)">
-                <fa-icon *ngIf="!sponsor.like" [icon]="farHeart" size="lg"></fa-icon>
-                <fa-icon style="color: #d32f2f;" *ngIf="sponsor.like" [icon]="faHeart" size="lg"></fa-icon>
-            </button>
-
-        </div>
-    </div>
-
-
-    <h4 class="my-right-left-10">评论</h4>
-
-    <div class="my-card" style="margin-top: 0px; margin-bottom: 0px;" *ngFor="let comment of comments">
-
-        <div>
-            <fa-icon [icon]="faClock" size="sm"></fa-icon>
-            {{comment.userName}} {{comment.commentCreate | myDate:'MM-dd HH:mm'}}
-        </div>
-        <div style="width: 80%;">
-            <fa-icon [icon]="faQuoteLeft" size="sm"></fa-icon>
-            {{comment.commentContent}}
-            <fa-icon [icon]="faQuoteRight" size="sm"></fa-icon>
         </div>
 
-        <div style="display: flex;">
-            <div style="width: 20% ;flex: 0 0 auto;"></div>
-            <div *ngIf="comment.commentReply" style="text-align: right; flex: 1 1 auto;">
+
+        <h4 class="my-right-left-10">活动票/报名</h4>
+        <mat-accordion class="headers-align">
+            <mat-expansion-panel hideToggle class="my-right-left-10" *ngFor="let ticket of tickets">
+                <mat-expansion-panel-header style="font-size: 14px;">
+                    <mat-panel-title>
+                        {{ticket.ticketName}}
+                    </mat-panel-title>
+                    <mat-panel-description>
+                        < {{ticket.ticketSum-ticket.ticketSold}}张 
+                            <fa-icon [icon]="faDoorOpen" size="lg"
+                                *ngIf="(ticket.ticketSum-ticket.ticketSold) > 0">
+                            </fa-icon>
+                            <fa-icon [icon]="faDoorClosed" size="lg" *ngIf="(ticket.ticketSum-ticket.ticketSold) <= 0 ">
+                            </fa-icon>
+                    </mat-panel-description>
+
+                </mat-expansion-panel-header>
+                <p>
+                    {{ticket.ticketRemark}}
+                </p>
+                <mat-action-row>
+                    <button mat-raised-button color="primary" (click)="entry(ticket)"
+                        [disabled]="activity.expired || (ticket.ticketSum-ticket.ticketSold) <= 0  || !entryRight">
+                        报名</button>
+                </mat-action-row>
+            </mat-expansion-panel>
+
+        </mat-accordion>
+
+        <h4 class="my-right-left-10">活动内容</h4>
+        <div class="ql-container ql-snow" style="border-width: 0; height:auto;background: white;">
+            <div class="ql-editor" [innerHTML]="activity.activityContent">
+            </div>
+        </div>
+
+        <h4 class="my-right-left-10">主办方</h4>
+        <div class="my-card" (click)="toSponsor($event)">
+            <div style="display: flex; align-items:flex-start;">
+                <div style="position: relative">
+                    <img class="my-circle-avatar" onerror="this.src='assets/images/default-head.png'"
+                        [src]="baseUrl+sponsor.sponsorLogo">
+                    <!--
+                    <fa-layers [fixedWidth]="true" style="position: absolute;top:-8px; left: -8px;">
+                        <fa-icon [icon]="faCircle" style="color:yellow;"></fa-icon>
+                        <fa-layers-text content="V" style="color: red;" transform="shrink-4"></fa-layers-text>
+                    </fa-layers>
+                    -->
+                </div>
+                <div class="my-right-left-16" style="flex-grow: 1;width: 100px">
+                    <!--width要加，否则my-single-line中的省略号无效-->
+                    <div class="my-single-line">
+                        {{sponsor.sponsorName}}
+                    </div>
+                    <div class="my-text-remark"> 
+                        {{sponsor.sponsorIntro}}
+                    </div>
+                </div>
+
+                <button mat-icon-button (click)="likeSponsor($event)">
+                    <fa-icon *ngIf="!sponsor.like" [icon]="farHeart" size="lg"></fa-icon>
+                    <fa-icon style="color: #d32f2f;" *ngIf="sponsor.like" [icon]="faHeart" size="lg"></fa-icon>
+                </button>
+
+            </div>
+        </div>
+
+
+        <h4 class="my-right-left-10">评论</h4>
+
+        <div class="my-card" style="margin-top: 0px; margin-bottom: 0px;" *ngFor="let comment of comments">
+
+            <div>
+                <fa-icon [icon]="faClock" size="sm"></fa-icon>
+                {{comment.userName}} {{comment.commentCreate | myDate:'MM-dd HH:mm'}}
+            </div>
+            <div style="width: 80%;">
                 <fa-icon [icon]="faQuoteLeft" size="sm"></fa-icon>
-                [主办方回复]{{comment.commentReply}}
+                {{comment.commentContent}}
                 <fa-icon [icon]="faQuoteRight" size="sm"></fa-icon>
             </div>
+
+            <div style="display: flex;">
+                <div style="width: 20% ;flex: 0 0 auto;"></div>
+                <div *ngIf="comment.commentReply" style="text-align: right; flex: 1 1 auto;">
+                    <fa-icon [icon]="faQuoteLeft" size="sm"></fa-icon>
+                    [主办方回复]{{comment.commentReply}}
+                    <fa-icon [icon]="faQuoteRight" size="sm"></fa-icon>
+                </div>
+            </div>
+            <div *ngIf="comment.commentUpdate" style="text-align: right;">{{comment.commentUpdate}}</div>
+
         </div>
-        <div *ngIf="comment.commentUpdate" style="text-align: right;">{{comment.commentUpdate}}</div>
+
+
+
+        <div style="height: 56px;"></div>
 
     </div>
-
-
-
-    <div style="height: 56px;"></div>
-
 </div>
 
 <div style="position: fixed; bottom: 64px; width: 100%;" *ngIf="showUP">

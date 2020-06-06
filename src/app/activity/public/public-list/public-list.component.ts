@@ -12,6 +12,7 @@ import { convertDateFromString, getAndSavePath, isExplorer } from 'src/app/ts/ba
 import { MatSnackBar } from '@angular/material';
 import { Region } from 'src/app/ts/region';
 import { windowToggle } from 'rxjs/operators';
+import { CommandService } from 'src/app/user/command.service';
 
 @Component({
   selector: 'app-public-list',
@@ -20,7 +21,7 @@ import { windowToggle } from 'rxjs/operators';
 })
 export class PublicListComponent implements OnInit {
 
-  title = '公开活动';
+  
   showProgress = false;
   toEnd = false;
   favSponsorGroup: string[] = [];
@@ -48,6 +49,7 @@ export class PublicListComponent implements OnInit {
   constructor(
     private el: ElementRef,
     private userService: UserService,
+    private commandService: CommandService, 
     public snackBar: MatSnackBar,
     private router: Router,
     private activeRoute: ActivatedRoute,
@@ -65,7 +67,12 @@ export class PublicListComponent implements OnInit {
       this.favSponsorGroup = favListStr.split(',');
     }
 
-    this.getActivities();
+    // 为了解决angular的检查机制
+    setTimeout(() => {
+      this.commandService.setMessage(3);
+      this.getActivities();
+    }, 100);
+
     this.resetWindow();
     window.onresize = () => {
       this.resetWindow();
@@ -77,12 +84,13 @@ export class PublicListComponent implements OnInit {
     if (this.windowWidth > 800) {
       this.headWidth = (800 ) * 4 / 16 + 'px';
     } else {
-      this.headWidth = (this.windowWidth ) * 4 / 16 + 'px';
+      this.headWidth = (this.windowWidth ) * 4 / 16 + 'px'; 
     }
   }
 
   getActivities() {
     this.showProgress = true;
+    this.commandService.setMessage(1);
     this.userService.post(baseConfig.publicActivityList, this.query).subscribe(
       (data: Result) => {
         const result = { ...data };
@@ -136,12 +144,17 @@ export class PublicListComponent implements OnInit {
           }
 
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => {this.getActivities(); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
         // console.log(this.activities);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; },
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.getActivities();});
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
     );
   }
 
@@ -159,8 +172,11 @@ export class PublicListComponent implements OnInit {
   }
 
   detail(activity: any) {
-    console.log('dd');
-    this.router.navigate([this.urlDefine.publicActivity, activity.activityId]);
+    if (activity.isAd) {
+      window.open(activity.activityTags, '_blank');
+    } else {
+      this.router.navigate([this.urlDefine.publicActivity, activity.activityId]);
+    }
   }
 
   likeSponsor(event: any, activity: any) {
@@ -169,6 +185,7 @@ export class PublicListComponent implements OnInit {
     console.log(this.favSponsorGroup);
 
     this.showProgress = true;
+    this.commandService.setMessage(1);
     this.userService.post(baseConfig.toggleFavi, {sponsorId: activity.sponsor.sponsorId}).subscribe(
       (data: Result) => {
         const result = { ...data };
@@ -185,11 +202,16 @@ export class PublicListComponent implements OnInit {
           }
           window.localStorage.setItem('favList', this.favSponsorGroup.toString());
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => { this.likeSponsor(event, activity); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; },
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.likeSponsor(event, activity); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
     );
 
     event.stopPropagation();
@@ -200,6 +222,10 @@ export class PublicListComponent implements OnInit {
     this.router.navigate([urlDefine.sponsorActivityList, activity.sponsor.sponsorId]);
 
     event.stopPropagation();
+  }
+
+  test(){
+    
   }
 
 }

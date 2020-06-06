@@ -10,6 +10,7 @@ import {forbiddenRegValidator, isEmpty, getAndSavePath} from '../../ts/base-util
 // 组件导入
 import { MatSnackBar } from '@angular/material';
 import { SlideControlComponent } from '../../define/slide-control/slide-control.component';
+import { environment } from 'src/environments/environment';
 
 
 @Component({
@@ -63,18 +64,18 @@ export class LoginIndexComponent implements OnInit {
           window.localStorage.setItem(lsDefine.userInfo, JSON.stringify(result.data));
           let redUrl = window.localStorage.getItem(lsDefine.redirectUrl);
           if ( redUrl === null) {
-            redUrl = urlDefine.indexUrl;
+            redUrl = environment.web + '/' + urlDefine.indexUrl;
           }
           // console.log('返回原页面：' + redUrl);
           setTimeout(() => {
-            this.router.navigateByUrl(redUrl);
+            window.location.href = redUrl;
           }, 1000);
         } else {
-          this.userService.showError(result);
+          // this.userService.showError(result);
           this.reset();
         }
       },
-      (error: Result) => this.userService.showError(error)
+      // (error: Result) => this.userService.showError(error)
     );
   }
 

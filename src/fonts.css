@@ -1,3 +1,4 @@
+/*富文件编辑器使用字体*/
 .ql-snow .ql-picker.ql-font .ql-picker-label[data-value=SimSun]::before,
 .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=SimSun]::before {
     content: "宋体";

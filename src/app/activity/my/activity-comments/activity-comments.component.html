@@ -1,34 +1,40 @@
-<app-master-head [title]="title" [showProgress]="showProgress"
-    style="position: fixed; top: 0; width:100% ;z-index: 100 "></app-master-head>
-
-<div class="my-body" style="border: 0px solid red" (scroll)="scrollBottom($event)">
-    <div style="height: 56px"></div>
-    <div class="my-card" *ngFor="let comment of comments, let i = index" style="margin-bottom: 0px; margin-top: 0px;"
-        (click)="showBottom(comment)">
-        <h4>
-            {{comment.activity.activityTitle}}
-            <fa-icon *ngIf="comment.commentDel" [icon]="faCommentSlash" size="sm" style="color: red"></fa-icon>
-        </h4>
-        <div>
-            <fa-icon [icon]="faClock" size="sm"></fa-icon>    
-           {{comment.userName}} {{comment.commentCreate | myDate:'MM-dd HH:mm'}}
-        </div>
-        <div style="width: 80%;">
-            <fa-icon [icon]="faQuoteLeft" size="sm"></fa-icon>
-            {{comment.commentContent}}
-            <fa-icon [icon]="faQuoteRight" size="sm"></fa-icon>
-        </div>
-
-        <div style="display: flex;">
-            <div style="width: 20% ;flex: 0 0 auto;"></div>
-            <div *ngIf="comment.commentReply" style="text-align: right; flex: 1 1 auto;">
+<div class="my-body-parent" (scroll)="scrollBottom($event)">
+    <div class="my-body"  >
+        <div class="my-card" *ngFor="let comment of comments, let i = index" style="margin-bottom: 0px; margin-top: 0px;"
+            (click)="showBottom(comment)">
+            <h4>
+                {{comment.activity.activityTitle}}
+                <fa-icon *ngIf="comment.commentDel" [icon]="faCommentSlash" size="sm" style="color: red"></fa-icon>
+            </h4>
+            <div>
+                <fa-icon [icon]="faClock" size="sm"></fa-icon>    
+                <!--
+                <img class="my-circle-avatar" [src]="baseUrl + comment.userAvatar"
+                onerror="this.src='assets/images/default-head.png'" title="用户头像">
+                -->
+            {{comment.commentCreate | myDate:'MM-dd HH:mm'}}
+            </div>
+            <div style="width: 80%;">
                 <fa-icon [icon]="faQuoteLeft" size="sm"></fa-icon>
-                [主办方回复]{{comment.commentReply}}
+                {{comment.commentContent}}
                 <fa-icon [icon]="faQuoteRight" size="sm"></fa-icon>
             </div>
-        </div>
 
-        
-        <div *ngIf="comment.commentUpdate" style="text-align: right;">{{comment.commentUpdate}}</div>
+            <div style="display: flex;">
+                <div style="width: 20% ;flex: 0 0 auto;"></div>
+                <div *ngIf="comment.commentReply" style="text-align: right; flex: 1 1 auto;">
+                    <fa-icon [icon]="faQuoteLeft" size="sm"></fa-icon>
+                    [主办方回复]{{comment.commentReply}}
+                    <fa-icon [icon]="faQuoteRight" size="sm"></fa-icon>
+                </div>
+            </div>
+
+            
+            <div *ngIf="comment.commentUpdate" style="text-align: right;">{{comment.commentUpdate}}</div>
+        </div>
+        <div *ngIf="!comments || comments.length === 0 " style="display: flex;justify-content: center;align-items: center; height: 100%; flex-direction: column;">
+            <img src="/assets/images/nocontent.png" style="max-width: 50%; margin-top: 64px;">
+                <p style="display: block;">空空如也，还没有评论哦</p>
+        </div>
     </div>
 </div>

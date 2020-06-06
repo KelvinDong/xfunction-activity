@@ -5,9 +5,13 @@ import { Router, ActivatedRoute, Params, ParamMap } from '@angular/router';
 import { UserService, Result, User } from '../user.service';
 import { baseConfig, urlDefine, regDefine, lsDefine } from '../../ts/base-config';
 
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar, MatDialog } from '@angular/material';
 import { SlideControlComponent } from 'src/app/define/slide-control/slide-control.component';
-import { getAndSavePath, forbiddenRegValidator, isNumber } from 'src/app/ts/base-utils';
+import { getAndSavePath, forbiddenRegValidator, isNumber, canvasDataURL, getBlobByBase64 } from 'src/app/ts/base-utils';
+import { environment } from 'src/environments/environment';
+import { ImageCropComponent } from 'src/app/define/image-crop/image-crop.component';
+import { MasterHeadComponent } from 'src/app/define/master-head/master-head.component';
+import { CommandService } from '../command.service';
 
 @Component({
   selector: 'app-my-info',
@@ -16,11 +20,12 @@ import { getAndSavePath, forbiddenRegValidator, isNumber } from 'src/app/ts/base
 })
 export class MyInfoComponent implements OnInit {
 
+  /*
+  @ViewChild(MasterHeadComponent, { static: false }) 
+  mh: MasterHeadComponent;
+  */
 
-  title = '用户信息';
   showProgress = false;
-
-
 
   // 密码显示控制
   hide = true;
@@ -46,6 +51,7 @@ export class MyInfoComponent implements OnInit {
       position: new FormControl('', [
         forbiddenRegValidator(regDefine.resume)
       ]),
+      avatar: new FormControl('', []),
     });
 
   selectIndex = 0;
@@ -66,40 +72,49 @@ export class MyInfoComponent implements OnInit {
   changeCode = new FormControl('', [
     Validators.required, forbiddenRegValidator(regDefine.mobileCode)]);
 
+  headPicSrc = 'assets/images/default-head.png';
 
   constructor(
     private userService: UserService,
+    private commandService: CommandService,
     public snackBar: MatSnackBar,
     private router: Router,
+    public dialog: MatDialog,
     private activeRoute: ActivatedRoute
   ) { }
 
   ngOnInit() {
+    // getAndSavePath(this.activeRoute);
 
-    getAndSavePath(this.activeRoute);
-
-    // 重新获取用户基础信息,也达到更新token的目的
-    this.showProgress = true;
-    this.userService.post(baseConfig.userGet, {}).subscribe(
-      (data: Result) => {
-        const result = { ...data };
-        if (result.success) {
-          this.userInfo = result.data;
-          window.localStorage.setItem(lsDefine.userInfo, JSON.stringify(this.userInfo));
-          this.activeMobile.setValue(this.userInfo.userMobile);
-          this.resumeForm.patchValue(this.userInfo);
-        } else { // 基本信息不完整 ，转到首页去，
-          this.userService.showError(result);
+    // 重新获取用户基础信息
+    setTimeout(() => {
+      this.commandService.setMessage(3);
+      this.showProgress = true;
+      this.commandService.setMessage(1);
+      this.userService.post(baseConfig.userGet, {}).subscribe(
+        (data: Result) => {
+          const result = { ...data };
+          if (result.success) {
+            this.userInfo = result.data;
+            window.localStorage.setItem(lsDefine.userInfo, JSON.stringify(this.userInfo));
+            this.activeMobile.setValue(this.userInfo.userMobile);
+            this.resumeForm.patchValue(this.userInfo);
+            this.headPicSrc = environment.media + '/activity/images' + this.userInfo.userAvatar;
+          } else { // 基本信息不完整 ，转到首页去，
+            this.userService.showError1(result, () => {this.ngOnInit(); } );
+            this.router.navigateByUrl(urlDefine.indexUrl);
+          }
+          this.showProgress = false;
+          this.commandService.setMessage(0);
+        },
+        (error: Result) => { // 基本信息不完整 ，转到首页去，
+          this.userService.showError1(error, () => {this.ngOnInit(); });
           this.router.navigateByUrl(urlDefine.indexUrl);
+          this.showProgress = false;
+          this.commandService.setMessage(0);
         }
-        this.showProgress = false;
-      },
-      (error: Result) => { // 基本信息不完整 ，转到首页去，
-        this.userService.showError(error);
-        this.router.navigateByUrl(urlDefine.indexUrl);
-        this.showProgress = false;
-      }
-    );
+      );
+    }, 100);
 
     // 有参数就切至1
     this.activeRoute.queryParamMap.subscribe((data: ParamMap) => {
@@ -151,12 +166,12 @@ export class MyInfoComponent implements OnInit {
         if (result.success) {
           this.snackBar.open('验证码短信已经发送，请查收', '', { duration: 5000 });
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => { this.sendSMS(); } );
         }
         this.showProgress = false;
       },
       (error: Result) => {
-        this.userService.showError(error);
+        this.userService.showError1(error, () => { this.sendSMS(); });
         this.showProgress = false;
       }
     );
@@ -185,6 +200,7 @@ export class MyInfoComponent implements OnInit {
   active(){
 
     const formValue: any = { mobile: this.activeMobile.value , code: this.mobileCode.value};
+    this.commandService.setMessage(1);
     this.showProgress = true;
     this.userService.post(baseConfig.activeMobile, formValue).subscribe(
       (data: Result) => {
@@ -200,13 +216,15 @@ export class MyInfoComponent implements OnInit {
           // 为了 手机号 重新从服务端获取，也可以直接写到LS中
           this.ngOnInit();
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => {this.active(); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
       (error: Result) => {
-        this.userService.showError(error);
+        this.userService.showError1(error, () => {this.active(); });
         this.showProgress = false;
+        this.commandService.setMessage(0);
       }
     );
   }
@@ -214,19 +232,22 @@ export class MyInfoComponent implements OnInit {
 
   sendChangeSMS() {
     this.showProgress = true;
+    this.commandService.setMessage(1);
     this.userService.post(baseConfig.sendChangeCode, '').subscribe(
       (data: Result) => {
         const result = { ...data };
         if (result.success) {
           this.snackBar.open('验证码短信已经发送，请查收', '', { duration: 5000 });
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => { this.sendChangeSMS(); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
       (error: Result) => {
-        this.userService.showError(error);
+        this.userService.showError1(error, () => {this.sendChangeSMS(); });
         this.showProgress = false;
+        this.commandService.setMessage(0);
       }
     );
 
@@ -254,6 +275,7 @@ export class MyInfoComponent implements OnInit {
   change() {
     const formValue: any = { userAuth: this.changePwd.value , code: this.changeCode.value};
     this.showProgress = true;
+    this.commandService.setMessage(1);
     this.userService.post(baseConfig.userChangeAuth, formValue).subscribe(
       (data: Result) => {
         const result = { ...data };
@@ -268,14 +290,16 @@ export class MyInfoComponent implements OnInit {
           this.snackBar.open('密码修改成功', '', { duration: 3000 });
           this.changePwd.reset();
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => {this.change(); });
 
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
       (error: Result) => {
-        this.userService.showError(error);
+        this.userService.showError1(error, () => { this.change(); });
         this.showProgress = false;
+        this.commandService.setMessage(0);
       }
     );
   }
@@ -287,7 +311,7 @@ export class MyInfoComponent implements OnInit {
   updateResume() {
 
     console.log(this.resumeForm.value);
-
+    this.commandService.setMessage(1);
     this.showProgress = true;
     this.userService.post(baseConfig.userUpdateResume, this.resumeForm.value).subscribe(
       (data: Result) => {
@@ -296,16 +320,60 @@ export class MyInfoComponent implements OnInit {
           this.snackBar.open('修改成功', '', { duration: 3000 });
           this.userInfo = result.data;
           window.localStorage.setItem(lsDefine.userInfo, JSON.stringify(this.userInfo));
+          this.commandService.setMessage(4);
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => { this.updateResume(); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
       (error: Result) => {
-        this.userService.showError(error);
+        this.userService.showError1(error, () => { this.updateResume(); });
         this.showProgress = false;
+        this.commandService.setMessage(0);
       }
     );
 
+  }
+
+  selectImg(e: any ) {
+    const dialogRef = this.dialog.open(ImageCropComponent, {
+      // height: '400px',
+      width: '300px',
+      data: { target: e }
+    });
+    dialogRef.afterClosed().subscribe((resultData: any) => {
+      // console.log(resultData);
+      if (resultData) {
+        this.uploadPic(getBlobByBase64(resultData));
+      }
+    });
+  }
+
+  uploadPic(bob: Blob) {
+    const postData: FormData = new FormData();
+    postData.append('file', bob, 'up.jpg');
+    this.showProgress = true;
+    this.commandService.setMessage(1);
+    this.userService.postFormData(baseConfig.headPic, postData).subscribe(
+      (data: Result) => {
+        const result = { ...data };
+        if (result.success) {
+          this.resumeForm.patchValue({
+            avatar: result.data
+          });
+          this.headPicSrc = environment.media + '/activity/images' + result.data;
+        } else {
+          this.userService.showError1(result, () => {this.uploadPic(bob); });
+        }
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.uploadPic(bob); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+     }
+    );
   }
 }

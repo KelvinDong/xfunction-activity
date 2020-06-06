@@ -1,106 +1,104 @@
-<app-master-head [title]="title" [showProgress]="showProgress" *ngIf="!step"
-    style="position: fixed; top: 0; width:100% ;z-index: 100 "></app-master-head>
-<div class="my-body" (scroll)="scrollBottom($event)" *ngIf="!step">
-    <div style="height: 56px"></div>
-    <form (ngSubmit)="formSubmit()" [formGroup]="settingForm" >
-    <div class="my-card">
+<div class="my-body-parent" (scroll)="scrollBottom($event)" *ngIf="!step">
+    <div class="my-body" >
+        <form (ngSubmit)="formSubmit()" [formGroup]="settingForm" >
+        <div class="my-card">
 
-        <mat-form-field style="width:100%" floatLabel="auto">
-            <input matInput formControlName="title" placeholder="活动名称" required>
-        </mat-form-field>
-        <mat-form-field style="width:100%" floatLabel="auto">
-            <mat-select placeholder="票种选择" formControlName="tickets" required multiple>
-                <mat-option *ngFor="let item of tickets" [value]="item.ticketId">{{item.ticketName + '(' + item.ticketSold + ')'}}</mat-option>
-            </mat-select>
-        </mat-form-field>
+            <mat-form-field style="width:100%" floatLabel="auto">
+                <input matInput formControlName="title" placeholder="活动名称" required>
+            </mat-form-field>
+            <mat-form-field style="width:100%" floatLabel="auto">
+                <mat-select placeholder="票种选择" formControlName="tickets" required multiple>
+                    <mat-option *ngFor="let item of tickets" [value]="item.ticketId">{{item.ticketName + '(' + item.ticketSold + ')'}}</mat-option>
+                </mat-select>
+            </mat-form-field>
 
-        <mat-checkbox style="margin-left: 10px" formControlName="inCancle">包括取消名单</mat-checkbox>
-        <mat-checkbox style="margin-left: 10px" formControlName="inUnSign">包括未签到名单</mat-checkbox>
-        <mat-checkbox style="margin-left: 10px" formControlName="canRepeat">允许重复抽取</mat-checkbox>
+            <mat-checkbox style="margin-left: 10px" formControlName="inCancle">包括取消名单</mat-checkbox>
+            <mat-checkbox style="margin-left: 10px" formControlName="inUnSign">包括未签到名单</mat-checkbox>
+            <mat-checkbox style="margin-left: 10px" formControlName="canRepeat">允许重复抽取</mat-checkbox>
 
-        <div style="display: flex;" class="my-top-bottom-8">
-            <div style="width: 30%;" formArrayName="turnNames">
-                <mat-form-field style="width:100%" floatLabel="auto" *ngFor="let item of turnNames;let i=index">
-                    <input matInput [formControlName]="i" placeholder="第{{i+1}}批抽取名称" required>
-                </mat-form-field>
+            <div style="display: flex;" class="my-top-bottom-8">
+                <div style="width: 30%;" formArrayName="turnNames">
+                    <mat-form-field style="width:100%" floatLabel="auto" *ngFor="let item of turnNames;let i=index">
+                        <input matInput [formControlName]="i" placeholder="第{{i+1}}批抽取名称" required>
+                    </mat-form-field>
 
-            </div>            
-            <div style="width: 20% " formArrayName="turnBatch">
-                <mat-form-field style="width:100%" floatLabel="auto" *ngFor="let item of turnBatch;let i=index">
-                    <input matInput placeholder="" disabled>
-                    <!--占位，无用途-->
-                    <mat-checkbox matSuffix [formControlName]="i">One by one</mat-checkbox>
-                </mat-form-field>
+                </div>            
+                <div style="width: 20% " formArrayName="turnBatch">
+                    <mat-form-field style="width:100%" floatLabel="auto" *ngFor="let item of turnBatch;let i=index">
+                        <input matInput placeholder="" disabled>
+                        <!--占位，无用途-->
+                        <mat-checkbox matSuffix [formControlName]="i">One by one</mat-checkbox>
+                    </mat-form-field>
+                </div>
+                <div style="width: 15% " formArrayName="oneOne" class="my-right-left-10">
+                    <mat-form-field style="width:100%" floatLabel="auto" *ngFor="let item of oneOne;let i=index">
+                        <input matInput [formControlName]="i" placeholder="One by one 间隔">
+                        <span matSuffix>秒</span>
+                    </mat-form-field>
+                </div>
+                <div style="width: 35%" formArrayName="turnSums" >
+                    <mat-form-field style="width:100%" floatLabel="auto" *ngFor="let item of turnSums;let i=index">
+                        <input matInput [formControlName]="i" placeholder="抽取人数" required>
+                        <mat-icon matSuffix *ngIf="i === turnSums.length-1" (click)="addTurn($event)">
+                            add_circle_outline
+                        </mat-icon>
+                        <mat-icon matSuffix style="margin-left: 5px" *ngIf="i === turnSums.length-1 && i > 0"
+                            (click)="removeTurn($event)">
+                            remove_circle_outline
+                        </mat-icon>
+                    </mat-form-field>
+                </div>
             </div>
-            <div style="width: 15% " formArrayName="oneOne" class="my-right-left-10">
-                <mat-form-field style="width:100%" floatLabel="auto" *ngFor="let item of oneOne;let i=index">
-                    <input matInput [formControlName]="i" placeholder="One by one 间隔">
-                    <span matSuffix>秒</span>
-                </mat-form-field>
-            </div>
-            <div style="width: 35%" formArrayName="turnSums" >
-                <mat-form-field style="width:100%" floatLabel="auto" *ngFor="let item of turnSums;let i=index">
-                    <input matInput [formControlName]="i" placeholder="抽取人数" required>
-                    <mat-icon matSuffix *ngIf="i === turnSums.length-1" (click)="addTurn($event)">
-                        add_circle_outline
-                    </mat-icon>
-                    <mat-icon matSuffix style="margin-left: 5px" *ngIf="i === turnSums.length-1 && i > 0"
-                        (click)="removeTurn($event)">
-                        remove_circle_outline
-                    </mat-icon>
-                </mat-form-field>
+            <div>
+                <button mat-raised-button [disabled]="settingForm.invalid" type="submit">保存配置</button>
+                <button type="button" style="margin-left: 8px;margin-right: 8px;" mat-raised-button (click)="edit()" [disabled]="settingForm.invalid">编辑界面&测试</button>
+                <button type="button" color="primary" mat-raised-button (click)="start()" [disabled]="settingForm.invalid"
+                    style="float: right;">开始抽取</button>
+
             </div>
         </div>
-        <div>
-            <button mat-raised-button [disabled]="settingForm.invalid" type="submit">保存配置</button>
-            <button type="button" style="margin-left: 8px;margin-right: 8px;" mat-raised-button (click)="edit()" [disabled]="settingForm.invalid">编辑界面&测试</button>
-            <button type="button" color="primary" mat-raised-button (click)="start()" [disabled]="settingForm.invalid"
-                style="float: right;">开始抽取</button>
+        </form>
 
-        </div>
+        <mat-tab-group>
+            <mat-tab label="帮助">
+                <p *ngIf="!isChrome" style="text-align: center; color: tomato;">当前非指定PC Chrome浏览器</p>
+                <dl class="my-right-left-16">
+                    <dt>此功能是管理活动的附加功能，需先完成活动管理相关操作，可以选择在线报名或导入报名人员。推荐使用Chrome浏览器,以保证功能完美展示。</dt>
+                    <dt>允许重复抽取</dt>
+                    <dd>仅支持一个完整的抽取流程中有效</dd>
+
+                    <dt>One by one</dt>
+                    <dd>名单一个一个抽取，否则批量一次性抽取</dd>
+
+                    <dt>one by one 间隔</dt>
+                    <dd>仅在One by one 选中的情况下有效</dd>
+                    <dd>等于0，表示手动抽取（点击“手动One by one抽取”按钮，或空格键）</dd>
+                    <dd>大于等于5，表示由系统每隔N秒自动抽取</dd>
+                    <dt>请务必保证名单总数大于抽取人数之和,每批次抽取人数建议不超过60人。</dt>
+                </dl>
+            </mat-tab>
+            <mat-tab label="抽取记录">
+                <div style="display: flex;justify-content:flex-end " class ="my-right-left-16 my-top-bottom-8">
+                    <button mat-raised-button  type="button" (click)="dlResults()"> 下载</button>
+                </div>
+                <mat-accordion>
+                    <mat-expansion-panel *ngFor="let item of results">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title>
+                                {{item.remark}}
+                            </mat-panel-title>
+                            <mat-panel-description>
+                                {{item.create}}
+                            </mat-panel-description>
+                        </mat-expansion-panel-header>
+                        <p>{{item.result}}</p>
+                    </mat-expansion-panel>
+                </mat-accordion>
+
+            </mat-tab>
+        </mat-tab-group>
     </div>
-    </form>
-
-    <mat-tab-group>
-        <mat-tab label="帮助">
-            <p *ngIf="!isChrome" style="text-align: center; color: tomato;">当前非指定PC Chrome浏览器</p>
-            <dl class="my-right-left-16">
-                <dt>推荐使用Chrome浏览器,以保证功能完美展示。</dt>
-                <dt>允许重复抽取</dt>
-                <dd>仅支持一个完整的抽取流程中有效</dd>
-
-                <dt>One by one</dt>
-                <dd>名单一个一个抽取，否则批量一次性抽取</dd>
-
-                <dt>one by one 间隔</dt>
-                <dd>仅在One by one 选中的情况下有效</dd>
-                <dd>等于0，表示手动抽取（点击“手动One by one抽取”按钮，或空格键）</dd>
-                <dd>大于等于5，表示由系统每隔N秒自动抽取</dd>
-                <dt>请务必保证名单总数大于抽取人数之和,每批次抽取人数建议不超过60人。</dt>
-            </dl>
-        </mat-tab>
-        <mat-tab label="抽取记录">
-            <div style="display: flex;justify-content:flex-end " class ="my-right-left-16 my-top-bottom-8">
-                <button mat-raised-button  type="button" (click)="dlResults()"> 下载</button>
-            </div>
-            <mat-accordion>
-                <mat-expansion-panel *ngFor="let item of results">
-                    <mat-expansion-panel-header>
-                        <mat-panel-title>
-                            {{item.remark}}
-                        </mat-panel-title>
-                        <mat-panel-description>
-                            {{item.create}}
-                        </mat-panel-description>
-                    </mat-expansion-panel-header>
-                    <p>{{item.result}}</p>
-                </mat-expansion-panel>
-            </mat-accordion>
-
-        </mat-tab>
-    </mat-tab-group>
 </div>
-
 
 <!-- 以下抽取界面-->
 <!--  background-size 一定要放在imge之后，、-->
@@ -278,6 +276,11 @@
 
 
     <div style="position:fixed; bottom:0px;right:0px;background-color:rgba(0, 0, 0, 0.5); color:white">
+        <span style="margin-left: 12px;">静音</span>
+        <input name="doneMute"  type="checkbox" (click)="muteDone($event)"/>
+
+        <input hidden id="backAudio" type="file" accept="audio/*" (change)="addMusic($event)">
+        <label  style="cursor: pointer;margin-left: 12px;" for ="backAudio">背景音乐</label>
 
         <button mat-button type="button" class="startButton" *ngIf="!stepRunning && !hasResult" (disabled)="!stepEnough"
             (click)="controlStep(true)">开始</button>

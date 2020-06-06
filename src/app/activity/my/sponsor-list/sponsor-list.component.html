@@ -1,37 +1,38 @@
-<app-master-head [title]="title" [showProgress]="showProgress"
-    style="position: fixed; top: 0; width:100% ;z-index: 100 "></app-master-head>
+<div class="my-body-parent">
+    <div class="my-body" style="border: 0px solid red" (scroll)="scrollBottom($event)">
+        <div class="my-card" *ngFor="let sponsor of sponsors" (click)="toSponsorActivityList(sponsor)">
+            <div style="display: flex; align-items:flex-start;">
+                <div style="position: relative">
+                    <img class="my-box-avatar" onerror="this.src='assets/images/default-head.png'"
+                        [src]="baseUrl+sponsor.sponsorLogo">
+                    <!--
+                    <fa-layers [fixedWidth]="true" style="position: absolute;top:-8px; left: -8px;">
+                        <fa-icon [icon]="faCircle" style="color:yellow;"></fa-icon>
+                        <fa-layers-text content="V" style="color: red;" transform="shrink-4"></fa-layers-text>
+                    </fa-layers>
+                    -->
 
+                </div>
+                <div class="my-right-left-16" style="flex-grow: 1;width: 100px">
+                    <!--width要加，否则my-single-line中的省略号无效-->
+                    <div class="my-single-line">
+                        {{sponsor.sponsorName}}
+                    </div>
+                    <div class="my-text-remark block-with-text">
+                        {{sponsor.sponsorIntro}}
+                    </div>
+                </div>
 
-<div class="my-body" style="border: 0px solid red" (scroll)="scrollBottom($event)">
-    <div style="height: 60px"></div>
-    <div class="my-card" *ngFor="let sponsor of sponsors" (click)="toSponsorActivityList(sponsor)">
-        <div style="display: flex; align-items:flex-start;">
-            <div style="position: relative">
-                <img class="my-box-avatar" onerror="this.src='assets/images/default-head.png'"
-                    [src]="baseUrl+sponsor.sponsorLogo">
-                <!--
-                <fa-layers [fixedWidth]="true" style="position: absolute;top:-8px; left: -8px;">
-                    <fa-icon [icon]="faCircle" style="color:yellow;"></fa-icon>
-                    <fa-layers-text content="V" style="color: red;" transform="shrink-4"></fa-layers-text>
-                </fa-layers>
-                -->
+                <button mat-icon-button (click)="likeSponsor($event,sponsor)">
+                    <fa-icon *ngIf="!sponsor.like" [icon]="farHeart" size="lg"></fa-icon>
+                    <fa-icon  style="color: #d32f2f;" *ngIf="sponsor.like" [icon]="faHeart" size="lg"></fa-icon>
+                </button>
 
             </div>
-            <div class="my-right-left-16" style="flex-grow: 1;width: 100px">
-                <!--width要加，否则my-single-line中的省略号无效-->
-                <div class="my-single-line">
-                    {{sponsor.sponsorName}}
-                </div>
-                <div class="my-text-remark block-with-text">
-                    {{sponsor.sponsorIntro}}
-                </div>
-            </div>
-
-            <button mat-icon-button (click)="likeSponsor($event,sponsor)">
-                <fa-icon *ngIf="!sponsor.like" [icon]="farHeart" size="lg"></fa-icon>
-                <fa-icon  style="color: #d32f2f;" *ngIf="sponsor.like" [icon]="faHeart" size="lg"></fa-icon>
-            </button>
-
+        </div>
+        <div *ngIf="!sponsors || sponsors.length === 0 " style="display: flex;justify-content: center;align-items: center; height: 100%; flex-direction: column;">
+            <img src="/assets/images/nocontent.png" style="max-width: 50%; margin-top: 64px;">
+                <p style="display: block;">空空如也，请积极关注哦</p>
         </div>
     </div>
 </div>

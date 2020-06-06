@@ -1,10 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { forbiddenRegValidator, canvasDataURL } from 'src/app/ts/base-utils';
+import { forbiddenRegValidator, canvasDataURL, getBlobByBase64, getAndSavePath } from 'src/app/ts/base-utils';
 import { regDefine, baseConfig } from 'src/app/ts/base-config';
 import { UserService, Result } from 'src/app/user/user.service';
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar, MatDialog } from '@angular/material';
 import { environment } from 'src/environments/environment';
+import { ImageCropComponent } from 'src/app/define/image-crop/image-crop.component';
+import { ActivatedRoute } from '@angular/router';
+import { CommandService } from 'src/app/user/command.service';
 
 @Component({
   selector: 'app-activity-sponsor',
@@ -34,29 +37,40 @@ export class ActivitySponsorComponent implements OnInit {
 
   constructor(
     private userService: UserService,
+    private commandService: CommandService,
+    public dialog: MatDialog,
     public snackBar: MatSnackBar,
+    private activeRoute: ActivatedRoute
   ) { }
 
   ngOnInit() {
 
-    this.showProgress = true;
-    this.userService.post(baseConfig.sponsorGet, '').subscribe(
-      (data: Result) => {
-        const result = { ...data };
-        if (result.success) {
-          this.sponsor = result.data;
-          this.sponsorPicSrc = environment.media + '/activity/images' + this.sponsor.sponsorLogo;
-          this.sponsorForm.patchValue(this.sponsor);
-        } else {
-          this.userService.showError(result);
+    getAndSavePath(this.activeRoute);
+
+    setTimeout(() => {
+      this.commandService.setMessage(3);
+      this.showProgress = true;
+      this.commandService.setMessage(1);
+      this.userService.post(baseConfig.sponsorGet, '').subscribe(
+        (data: Result) => {
+          const result = { ...data };
+          if (result.success) {
+            this.sponsor = result.data;
+            this.sponsorPicSrc = environment.media + '/activity/images' + this.sponsor.sponsorLogo;
+            this.sponsorForm.patchValue(this.sponsor);
+          } else {
+            this.userService.showError1(result, () => { this.ngOnInit(); });
+          }
+          this.showProgress = false;
+          this.commandService.setMessage(0);
+        },
+        (error: Result) => {
+          this.userService.showError1(error, () => {this.ngOnInit(); });
+          this.showProgress = false;
+          this.commandService.setMessage(0);
         }
-        this.showProgress = false;
-      },
-      (error: Result) => {
-        this.userService.showError(error);
-        this.showProgress = false;
-      }
-    );
+      );
+    }, 100);
   }
 
   get sponsorName() {
@@ -69,52 +83,64 @@ export class ActivitySponsorComponent implements OnInit {
   addUpdate() {
 
     this.showProgress = true;
+    this.commandService.setMessage(1);
     this.userService.post(baseConfig.sponsorSet, this.sponsorForm.value).subscribe(
       (data: Result) => {
         const result = { ...data };
         if (result.success) {
           this.snackBar.open('修改成功', '', { duration: 3000 });
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => {this.addUpdate(); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0)
       },
       (error: Result) => {
-        this.userService.showError(error);
+        this.userService.showError1(error, () => {this.addUpdate(); });
         this.showProgress = false;
+        this.commandService.setMessage(0);
       }
     );
   }
 
-  sponsorPic(event: any) {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-    const that = this;
-    reader.onload = function(e) {
-      // console.log(this.result);
-      canvasDataURL(this.result, 120, that, that.uploadPic);  // 处理完后调用uploadPic()
-    };
-    reader.readAsDataURL(file);
+  selectImg(e: any ) {
+    const dialogRef = this.dialog.open(ImageCropComponent, {
+      // height: '400px',
+      width: '300px',
+      data: { target: e }
+    });
+    dialogRef.afterClosed().subscribe((resultData: any) => {
+      // console.log(resultData);
+      if (resultData) {
+        this.uploadPic(getBlobByBase64(resultData));
+      }
+    });
   }
 
-  uploadPic(bob: Blob, that) {
+  uploadPic(bob: Blob) {
     const postData: FormData = new FormData();
     postData.append('file', bob, 'up.jpg');
-    that.showProgress = true;
-    that.userService.postFormData(baseConfig.sponsorPic, postData).subscribe(
+    this.showProgress = true;
+    this.commandService.setMessage(1);
+    this.userService.postFormData(baseConfig.sponsorPic, postData).subscribe(
       (data: Result) => {
         const result = { ...data };
         if (result.success) {
-          that.sponsorForm.patchValue({
+          this.sponsorForm.patchValue({
             sponsorLogo: result.data
           });
-          that.sponsorPicSrc = environment.media + '/activity/images' + result.data;
+          this.sponsorPicSrc = environment.media + '/activity/images' + result.data;
         } else {
-          that.userService.showError(result);
+          this.userService.showError1(result, () => {this.uploadPic(bob); });
         }
-        that.showProgress = false;
+        this.showProgress = false;
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { that.userService.showError(error); that.showProgress = false; }
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.uploadPic(bob); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      }
     );
   }
 

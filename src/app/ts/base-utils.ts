@@ -1,6 +1,6 @@
 import { Directive, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { AbstractControl, NG_VALIDATORS, Validator, ValidatorFn, Validators } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 
 import { lsDefine } from './base-config';
 
@@ -20,15 +20,17 @@ export function isEmpty(str: any) {
   }
 }
 
-export function getUserName() {
+
+export function getUserAvatar() {
   const userInfo: string = window.localStorage.getItem(lsDefine.userInfo);
   if (isEmpty(userInfo)) {
     return null;
   } else {
-    return JSON.parse(userInfo).userName;
+    return JSON.parse(userInfo).userAvatar;
   }
 
 }
+
 
 export function getUserMobile() {
   const userInfo: string = window.localStorage.getItem(lsDefine.userInfo);
@@ -52,22 +54,9 @@ export function getUserToken() {
 }
 
 export function getAndSavePath(activeRoute: ActivatedRoute) {
-  let selfUrl = '';
 
-  activeRoute.pathFromRoot.forEach(element => {
-    element.url.subscribe(url => {
-      for (const temp of url) {
-        // console.log(temp);
-        selfUrl = selfUrl + '/' + temp;
-      }
-    });
-  });
+  window.localStorage.setItem(lsDefine.redirectUrl, window.location.href);
 
-  if (!isEmpty(selfUrl)) {
-    selfUrl = selfUrl.substr(1);
-  }
-  // console.log('current url:' + selfUrl);
-  window.localStorage.setItem(lsDefine.redirectUrl, selfUrl);
 }
 
 export function isNumber(val: string) {
@@ -139,7 +128,7 @@ export function canvasDataURL(base64, reWidth: number, that, callback) {
       w = reWidth;
       h = (img.height / img.width) * w;
     }
-    const quality = 0.7;  // 默认图片质量为0.7
+    const quality = 1;  // 默认图片质量为0.7
     canvas.width = w;
     canvas.height = h;
     context.drawImage(img, 0, 0, w, h);

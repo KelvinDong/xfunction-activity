@@ -10,6 +10,7 @@ import { EntryCommentsBottomComponent } from './entry-comments-bottom/entry-comm
 import {
   faQuoteLeft, faQuoteRight, faClock, faCommentSlash
 } from '@fortawesome/free-solid-svg-icons';
+import { CommandService } from 'src/app/user/command.service';
 
 @Component({
   selector: 'app-entry-comments',
@@ -36,7 +37,7 @@ export class EntryCommentsComponent implements OnInit {
   constructor(
     private userService: UserService,
     private router: Router,
-
+    private commandService: CommandService,
     public snackBar: MatSnackBar,
 
     public dialog: MatDialog,
@@ -46,11 +47,16 @@ export class EntryCommentsComponent implements OnInit {
 
   ngOnInit() {
     getAndSavePath(this.activeRoute);
-    this.getComments();
+    setTimeout(() => {
+      this.getComments();
+      this.commandService.setMessage(3);
+    }, 100);
+    
   }
 
   getComments() {
     this.showProgress = true;
+    this.commandService.setMessage(1);
     this.userService.post(baseConfig.listMyComment, this.query).subscribe(
       (data: Result) => {
         const result = { ...data };
@@ -67,11 +73,16 @@ export class EntryCommentsComponent implements OnInit {
             this.query = { offset: this.query.offset + this.query.limit, limit: this.query.limit };
           }
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => {this.getComments(); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; }
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.getComments(); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      }
     );
   }
 
@@ -94,19 +105,7 @@ export class EntryCommentsComponent implements OnInit {
     bottomSheetRef.afterDismissed().subscribe(() => {
       switch (bottomSheetRef.instance.operType) {
         case 1:
-          this.showProgress = true;
-          this.userService.post(baseConfig.delMyComment, {commentId: comment.commentId}).subscribe(
-            (data: Result) => {
-              const result = { ...data };
-              if (result.success) {
-                comment.commentDel = true;
-              } else {
-                this.userService.showError(result);
-              }
-              this.showProgress = false;
-            },
-            (error: Result) => { this.userService.showError(error); this.showProgress = false; }
-          );
+          this.del(comment);
           break;
         case 2:
           this.router.navigate([urlDefine.publicActivity, comment.activity.activityId]);
@@ -117,5 +116,26 @@ export class EntryCommentsComponent implements OnInit {
     });
   }
 
+  del(comment){
+    this.showProgress = true;
+    this.commandService.setMessage(1);
+    this.userService.post(baseConfig.delMyComment, {commentId: comment.commentId}).subscribe(
+      (data: Result) => {
+        const result = { ...data };
+        if (result.success) {
+          comment.commentDel = true;
+        } else {
+          this.userService.showError1(result, () => {this.del(comment); });
+        }
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.del(comment); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      }
+    );
+  }
 
 }

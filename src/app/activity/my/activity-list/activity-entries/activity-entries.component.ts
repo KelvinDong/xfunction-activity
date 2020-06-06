@@ -11,6 +11,7 @@ import {
   faSearch
 } from '@fortawesome/free-solid-svg-icons';
 import { EntryImportComponent } from '../entry-import/entry-import.component';
+import { CommandService } from 'src/app/user/command.service';
 
 export interface Static {
   color: string;
@@ -49,6 +50,7 @@ export class ActivityEntriesComponent implements OnInit {
 
   constructor(
     private userService: UserService,
+    private commandService: CommandService,
     private activeRoute: ActivatedRoute,
     private router: Router,
     private http: HttpClient,
@@ -70,13 +72,17 @@ export class ActivityEntriesComponent implements OnInit {
     this.activeRoute.params.subscribe((data: Params) => {
       if (data.id !== undefined) { // 编辑
         this.activityId = parseInt(data.id, 10);
-        this.getEntries();
+        setTimeout(() => {
+          this.commandService.setMessage(3);
+          this.getEntries();
+        }, 100);
       }
     });
   }
 
   getEntries() {
     this.showProgress = true;
+    this.commandService.setMessage(1);
     const temp = this.queryForm.value;
     temp.offset = this.query.offset;
     temp.limit = this.query.limit;
@@ -174,11 +180,16 @@ export class ActivityEntriesComponent implements OnInit {
           }
           // console.log(result);
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => { this.getEntries(); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; },
+      (error: Result) => {
+        this.userService.showError1(error, () => { this.getEntries(); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
 
     );
   }
@@ -211,6 +222,8 @@ export class ActivityEntriesComponent implements OnInit {
         this.snackBar.open('微信生态要求，请点击右上角选择在浏览器中打开。', '', { duration: 3000 });
         return;
       }
+      this.showProgress = true;
+      this.commandService.setMessage(1);
       const userToken = getUserToken();
       const params = { activityId: this.activityId }; // body的参数
       this.http.post(environment.api + baseConfig.activityMyEntryDl, params, {
@@ -228,13 +241,18 @@ export class ActivityEntriesComponent implements OnInit {
         a.download =  Date.now() + '.xlsx';
         a.click();
         window.URL.revokeObjectURL(url);
-
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
+      (error: Result) => {
+        this.showProgress = false;
+        this.commandService.setMessage(0);
       });
     } else if (action === 2 ) { // 显示导入 和 下载 模板
       const dialogRef = this.dialog.open(EntryImportComponent, {
         data: { activityId: this.activityId, ticketId: this.defaultTicketId}
       });
-      dialogRef.afterClosed().subscribe((result: any) => { 
+      dialogRef.afterClosed().subscribe((result: any) => {
         if (result) {
           this.tickets = [];
           this.entries = [];
@@ -249,34 +267,46 @@ export class ActivityEntriesComponent implements OnInit {
   toggleCancel(entry: any, e: any){
     e.stopPropagation();
     this.showProgress = true;
+    this.commandService.setMessage(1);
     this.userService.post(baseConfig.activityMyEntryCancel, {entryId: entry.entryId}).subscribe(
       (data: Result) => {
         const result = { ...data };
         if (result.success) {
           entry.cancel = entry.cancel ? null : new Date() ;
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => { this.toggleCancel(entry, e); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; },
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.toggleCancel(entry, e); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
     );
   }
 
   sign(entry: any, e: any) {
     e.stopPropagation();
     this.showProgress = true;
+    this.commandService.setMessage(1);
     this.userService.post(baseConfig.activityMyEntrySign, {entryId: entry.entryId}).subscribe(
       (data: Result) => {
         const result = { ...data };
         if (result.success) {
           entry.checkin = new Date();
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => { this.sign(entry, e); } );
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; },
+      (error: Result) => {
+        this.userService.showError1(error, () => { this.sign(entry, e); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
     );
   }
 

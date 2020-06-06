@@ -1,3 +1,14 @@
+<!-- 弃用-->
+
+
+
+
+
+
+
+
+
+
 <mat-progress-bar style="position:fixed; top: 0px" mode="indeterminate" class="full-width" *ngIf="showProgress"></mat-progress-bar>
 <div class="my-toolbar">
         <button mat-icon-button [matMenuTriggerFor]="menu">
@@ -9,44 +20,54 @@
                     <mat-icon>public</mat-icon>
                     <span>公开活动</span>
                 </button>
-                <button mat-menu-item [disabled]="!userName" [matMenuTriggerFor]="myEntry"  >
+                <button mat-menu-item [matMenuTriggerFor]="myEntry"  >
                     <mat-icon>list</mat-icon>
                     <span>我的报名</span>
                 </button>
-                <button mat-menu-item [disabled]="!userName" [matMenuTriggerFor]="myActivity">
+                <button mat-menu-item  [matMenuTriggerFor]="myActivity">
                     <mat-icon>publish</mat-icon>
                     <span>我的活动</span>
                 </button>
-                <button mat-menu-item [matMenuTriggerFor]="demo"  >
-                    <mat-icon>loop</mat-icon>
-                    <span>Demo</span>
-                </button>
                 <mat-divider></mat-divider>
-                <button mat-menu-item [disabled]="!userName" [routerLink]="['/'+urlDefine.myQuesttionnaires]">
+                <button mat-menu-item  [routerLink]="['/'+urlDefine.myQuesttionnaires]">
                     <mat-icon>how_to_vote</mat-icon>
                     <span>调查问卷</span>
                 </button>
-                <button mat-menu-item [disabled]="!userName" [routerLink]="['/'+urlDefine.myGinfos]">
+                <button mat-menu-item  [routerLink]="['/'+urlDefine.myGinfos]">
                     <mat-icon>ballot</mat-icon>
                     <span>信息表单</span>
                 </button>
-                <button mat-menu-item [matMenuTriggerFor]="myOtherTools">
-                    <mat-icon>grain</mat-icon>
-                    <span>其它工具</span>
-                </button>
+                <button mat-menu-item  (click)="shortLink()" >
+                    <mat-icon>link</mat-icon>
+                    <SPAN>短链接/网址</SPAN>
+                </button>   
+                <button mat-menu-item [routerLink]="['/' + urlDefine.rotate]" >
+                    <mat-icon>stars</mat-icon>
+                    <span>大转盘</span>
+                </button>   
                 <mat-divider></mat-divider>  
-                <button mat-menu-item [disabled]="!userName" [matMenuTriggerFor]="myMenu">
+                <!--
+                <button mat-menu-item  [matMenuTriggerFor]="myMenu">
                     <mat-icon>face</mat-icon>
                     <span>我</span>
                 </button>
-                <button mat-menu-item [routerLink]="['/tools/questionnaire-public',2]">
-                    <mat-icon>message</mat-icon>
-                    <span>反馈</span>
+                -->
+                <button mat-menu-item [matMenuTriggerFor]="help">
+                    <mat-icon>help</mat-icon>
+                    <span>帮助</span>
                 </button>
-                <button mat-menu-item (click)="openAboutDialog()">
-                    <mat-icon>email</mat-icon>
-                    <span>关于</span>
-                </button>
+                
+        </mat-menu>
+
+        <mat-menu #help="matMenu">
+            <button [routerLink]="['/activity/my/entry-lottery/',1]" mat-menu-item>抽奖Demo</button>  
+            <button (click)="toCheckinDemo()" mat-menu-item>签到墙Demo</button>  
+            <button mat-menu-item [routerLink]="['/tools/questionnaire-public',2]">
+                <span>反馈</span>
+            </button>
+            <button mat-menu-item (click)="openAboutDialog()">
+                <span>关于</span>
+            </button>
         </mat-menu>
 
         <mat-menu #myEntry="matMenu">
@@ -55,10 +76,7 @@
                 <button [routerLink]="['/'+urlDefine.myFaviList]" mat-menu-item>我的关注</button>
                 
             </mat-menu>
-        <mat-menu #demo="matMenu">
-                <button [routerLink]="['/activity/my/entry-lottery/',1]" mat-menu-item>抽奖Demo</button>  
-                <button (click)="toCheckinDemo()" mat-menu-item>签到墙Demo</button>  
-        </mat-menu>
+
         <mat-menu #myOtherTools="matMenu">
             <button mat-menu-item  (click)="shortLink()" mat-menu-item>短链接/网址</button>   
             <button [routerLink]="['/' + urlDefine.rotate]"  mat-menu-item>大转盘</button>   
@@ -66,8 +84,10 @@
     
         <mat-menu #myMenu="matMenu">
             <button [routerLink]="['/'+urlDefine.myUrl]"  mat-menu-item>基本信息</button>   
+            <!--
             <button [routerLink]="['/'+urlDefine.myUrl]" [queryParams]="{w:'2'}" mat-menu-item>绑定手机</button>
             <button [routerLink]="['/'+urlDefine.myUrl]" [queryParams]="{w:'1'}" mat-menu-item>修改密码</button>   
+            -->
             <button mat-menu-item (click) = "logout()">退出</button>
         </mat-menu>
 
@@ -80,12 +100,14 @@
         <h3>{{title}}</h3>
         <span class="fill-remaining-space"></span>
         
-        <ng-container *ngIf="userName ; then thenNameTemplate; else elseNameTemplate"></ng-container>
+        <ng-container *ngIf="userToken ; then thenNameTemplate; else elseNameTemplate"></ng-container>
         <ng-template #thenNameTemplate>
-            <mat-icon>face</mat-icon><span  class="my-right-left-16">{{userName}}</span>
+            <mat-icon *ngIf="!userAvatar" [routerLink]="['/'+urlDefine.myUrl]">face</mat-icon>
+            <img class="my-circle-avatar" [src]="baseUrl + userAvatar" style="margin-right: 16px;" [routerLink]="['/'+urlDefine.myUrl]"
+                                onerror="this.src='assets/images/default-head.png'" title="用户头像">
         </ng-template>
         <ng-template #elseNameTemplate>
-            <button mat-button [routerLink]="['/'+urlDefine.loginUrl]" class="my-right-left-16">登录</button>
+            <button mat-button (click)="login()" class="my-right-left-16">登录</button>
         </ng-template>
     
     </div>

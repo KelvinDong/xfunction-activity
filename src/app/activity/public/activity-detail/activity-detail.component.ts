@@ -18,6 +18,7 @@ import { Region } from 'src/app/ts/region';
 import { CommentAddFormComponent } from './comment-add-form/comment-add-form.component';
 import html2canvas from 'html2canvas';
 import { DetailShareDialogComponent } from './detail-share-dialog/detail-share-dialog.component';
+import { CommandService } from 'src/app/user/command.service';
 
 @Component({
   selector: 'app-activity-detail',
@@ -84,6 +85,7 @@ export class ActivityDetailComponent implements OnInit {
     public dialog: MatDialog,
     public snackBar: MatSnackBar,
     private userService: UserService,
+    private commandService: CommandService,
     private region: Region,
     private el: ElementRef,
   ) { }
@@ -102,72 +104,12 @@ export class ActivityDetailComponent implements OnInit {
     // 从服务器获得已经保存，提供编辑
     this.activeRoute.params.subscribe((data: Params) => {
       if (data.id !== undefined) { // 编辑
-        this.showProgress = true;
-        this.userService.post(baseConfig.publicActivity, { activityId: parseInt(data.id, 10) }).subscribe(
-          (data: Result) => {
-            const result = { ...data };
-            if (result.success) {
-              // console.log(result);
-
-              this.activity = result.data;
-              this.tickets = result.data.tickets;
-              //this.tickets.splice(0, 1); // 删除第一个系统票种
-              this.sponsor = result.data.sponsor;
-              this.form = result.data.form;
-
-              this.title = this.activity.activityTitle;
-
-              this.activity.activityContent = this.sanitizer.bypassSecurityTrustHtml(this.activity.activityContent);
-
-              this.activity.activityArea = this.region.getName(this.activity.activityArea);
-              if (convertDateFromString(this.activity.entryEnd) < new Date()) {
-                this.activity.expired = true;
-              } else {
-                this.activity.expired = false  // 没有上架
-              }
-              const now = new Date();
-              if (((now.getTime() - convertDateFromString(this.activity.activityCreate).getTime()) < 1000 * 60 * 60 * 24)
-                && ((now.getTime() - convertDateFromString(this.activity.activityCreate).getTime()) > 0)
-              ) {
-                this.activity.newPublish = true;
-              } else {
-                this.activity.newPublish = false;
-              }
-
-              if (parseInt(this.activity.activityOrderDict, 10) >= 500) {
-                this.activity.recommand = true;
-              } else {
-                this.activity.recommand = false;
-              }
-
-              if (this.favSponsorGroup.indexOf(this.sponsor.sponsorId + '') < 0) {
-                this.sponsor.like = false;
-              } else {
-                this.sponsor.like = true;
-              }
-
-              // 请求 评论列表;
-
-              this.getComments();
-              // 准备微信分享内容
-              if (isExplorer('micromessenger')) {
-                this.userService.weixinShare({title: this.activity.activityTitle,
-                  desc: this.sponsor.sponsorName + this.sponsor.sponsorIntro,
-                  link: window.location.href,
-                  imgUrl: this.baseUrl + this.activity.activityPic
-                });
-              }
-
-            } else {
-              this.userService.showError(result);
-            }
-          },
-          (error: Result) => { this.userService.showError(error); this.showProgress = false; },
-          () => { this.showProgress = false; }
-        );
+        setTimeout(() => {
+          this.getActivity(data);
+          this.commandService.setMessage(2);
+        }, 100);
       } else {
         this.snackBar.open('错误：无法找到此活动', '', { duration: 3000 });
-
       }
 
     });
@@ -177,6 +119,77 @@ export class ActivityDetailComponent implements OnInit {
       this.resetWindow();
     };
 
+  }
+
+  getActivity(data){
+    this.showProgress = true;
+    this.commandService.setMessage(1);
+    this.userService.post(baseConfig.publicActivity, { activityId: parseInt(data.id, 10) }).subscribe(
+      (data: Result) => {
+        const result = { ...data };
+        if (result.success) {
+          // console.log(result);
+
+          this.activity = result.data;
+          this.tickets = result.data.tickets;
+          //this.tickets.splice(0, 1); // 删除第一个系统票种
+          this.sponsor = result.data.sponsor;
+          this.form = result.data.form;
+
+          this.title = this.activity.activityTitle;
+
+          this.activity.activityContent = this.sanitizer.bypassSecurityTrustHtml(this.activity.activityContent);
+
+          this.activity.activityArea = this.region.getName(this.activity.activityArea);
+          if (convertDateFromString(this.activity.entryEnd) < new Date()) {
+            this.activity.expired = true;
+          } else {
+            this.activity.expired = false  // 没有上架
+          }
+          const now = new Date();
+          if (((now.getTime() - convertDateFromString(this.activity.activityCreate).getTime()) < 1000 * 60 * 60 * 24)
+            && ((now.getTime() - convertDateFromString(this.activity.activityCreate).getTime()) > 0)
+          ) {
+            this.activity.newPublish = true;
+          } else {
+            this.activity.newPublish = false;
+          }
+
+          if (parseInt(this.activity.activityOrderDict, 10) >= 500) {
+            this.activity.recommand = true;
+          } else {
+            this.activity.recommand = false;
+          }
+
+          if (this.favSponsorGroup.indexOf(this.sponsor.sponsorId + '') < 0) {
+            this.sponsor.like = false;
+          } else {
+            this.sponsor.like = true;
+          }
+
+          // 请求 评论列表;
+
+          this.getComments();
+          // 准备微信分享内容
+          if (isExplorer('micromessenger')) {
+            this.userService.weixinShare({title: this.activity.activityTitle,
+              desc: this.sponsor.sponsorName + this.sponsor.sponsorIntro,
+              link: window.location.href,
+              imgUrl: this.baseUrl + this.activity.activityPic
+            });
+          }
+
+        } else {
+          this.userService.showError1(result, () => { this.getActivity(data); });
+        }
+      },
+      (error: Result) => {
+        this.userService.showError1(error, () => { this.getActivity(data); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
+      () => { this.showProgress = false; this.commandService.setMessage(0); }
+    );
   }
 
   resetWindow() {
@@ -190,10 +203,12 @@ export class ActivityDetailComponent implements OnInit {
 
   entry(ticket: Ticket) {
 
+    /*
     if (!getUserToken()) {
       this.router.navigateByUrl(urlDefine.loginUrl);
       return;
     }
+    */
 
     const dialogRef = this.dialog.open(EntryFormComponent, {
       // height: '400px',
@@ -203,32 +218,41 @@ export class ActivityDetailComponent implements OnInit {
     dialogRef.afterClosed().subscribe((resultData: string) => {
       if (resultData) {
         // 提交
-        this.showProgress = true;
-        this.userService.post(baseConfig.entryMyAdd, {
-          activityId: this.activity.activityId,
-          ticketId: ticket.ticketId, entryContent: resultData
-        }).subscribe(
-          (data: Result) => {
-            const result = { ...data };
-            if (result.success) {
-              this.entryRight = false;
-              this.snackBar.open('报名成功！', '', { duration: 5000 });
-            } else {
-              this.userService.showError(result);
-            }
-            this.showProgress = false;
-          },
-          (error: Result) => { this.userService.showError(error); this.showProgress = false; }
-        );
+        this.saveEntry(ticket, resultData);
       }
     });
   }
 
-
+ saveEntry(ticket, resultData){
+  this.showProgress = true;
+  this.commandService.setMessage(1);
+  this.userService.post(baseConfig.entryMyAdd, {
+    activityId: this.activity.activityId,
+    ticketId: ticket.ticketId, entryContent: resultData
+  }).subscribe(
+    (data: Result) => {
+      const result = { ...data };
+      if (result.success) {
+        this.entryRight = false;
+        this.snackBar.open('报名成功！', '', { duration: 5000 });
+      } else {
+        this.userService.showError1(result, () => { this.saveEntry( ticket, resultData); });
+      }
+      this.showProgress = false;
+      this.commandService.setMessage(0);
+    },
+    (error: Result) => {
+      this.userService.showError1(error, () => { this.saveEntry(ticket, resultData); });
+      this.showProgress = false;
+      this.commandService.setMessage(0);
+    }
+  );
+ }
 
   likeSponsor(event: any) {
 
     this.showProgress = true;
+    this.commandService.setMessage(1);
     this.userService.post(baseConfig.toggleFavi, { sponsorId: this.sponsor.sponsorId }).subscribe(
       (data: Result) => {
         const result = { ...data };
@@ -245,11 +269,16 @@ export class ActivityDetailComponent implements OnInit {
           }
           window.localStorage.setItem('favList', this.favSponsorGroup.toString());
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => {this.likeSponsor(event); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; },
+      (error: Result) => {
+        this.userService.showError1(error, () => { this.likeSponsor(event); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
     );
 
     event.stopPropagation();
@@ -263,23 +292,32 @@ export class ActivityDetailComponent implements OnInit {
     });
     dialogRef.afterClosed().subscribe((resultData: string) => {
       if (resultData) {
-        this.showProgress = true;
-        this.userService.post(baseConfig.publishComment, { activityId: this.activity.activityId, commentContent: resultData }).subscribe(
-          (data: Result) => {
-            const result = { ...data };
-            if (result.success) {
-              this.snackBar.open('发布成功', '', { duration: 5000 });
-              this.getComments();
-            } else {
-              this.userService.showError(result);
-            }
-            this.showProgress = false;
-          },
-          (error: Result) => { this.userService.showError(error); this.showProgress = false; },
-        );
-
+        this.saveComment(resultData);
       }
     });
+  }
+
+  saveComment(resultData){
+    this.showProgress = true;
+    this.commandService.setMessage(1);
+    this.userService.post(baseConfig.publishComment, { activityId: this.activity.activityId, commentContent: resultData }).subscribe(
+      (data: Result) => {
+        const result = { ...data };
+        if (result.success) {
+          this.snackBar.open('发布成功', '', { duration: 5000 });
+          this.getComments();
+        } else {
+          this.userService.showError1(result, () => { this.saveComment(resultData); });
+        }
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
+      (error: Result) => {
+        this.userService.showError1(error, () => { this.saveComment(resultData); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
+    );
   }
 
   toSponsor(event: any) {
@@ -300,11 +338,10 @@ export class ActivityDetailComponent implements OnInit {
             element.commentCreate = convertDateFromString(element.commentCreate);
           });
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => { this.getComments(); });
         }
-        this.showProgress = false;
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; },
+      (error: Result) => { this.userService.showError1(error, () => {this.getComments(); });  },
     );
 
   }
@@ -312,6 +349,7 @@ export class ActivityDetailComponent implements OnInit {
   share() {
     this.sharing = true;
     this.showProgress = true;
+    this.commandService.setMessage(1);
     setTimeout(() => {
       let dialogRef: any;
       const shareContent = this.el.nativeElement.querySelector('.screenPrint');
@@ -325,13 +363,14 @@ export class ActivityDetailComponent implements OnInit {
         dialogRef.afterClosed().subscribe((resultData: any) => {
           this.sharing = false;
           this.showProgress = false;
+          this.commandService.setMessage(0);
         });
       }).catch();
     }, 1000);
   }
 
   scrollTop() {
-    this.el.nativeElement.querySelector('.my-body').scrollTo({ left: 0, top: 0, behavior: 'smooth' });
+    this.el.nativeElement.querySelector('.my-body-parent-top').scrollTo({ left: 0, top: 0, behavior: 'smooth' });
   }
 
   scrollBottom(e: any) {

@@ -11,6 +11,7 @@ import { getAndSavePath, convertDateFromString, getUserToken, isExplorer } from 
 import { baseConfig } from 'src/app/ts/base-config';
 import { environment } from 'src/environments/environment';
 import { HttpHeaders, HttpClient } from '@angular/common/http';
+import { CommandService } from 'src/app/user/command.service';
 
 @Component({
   selector: 'app-questionnaire-entry-list',
@@ -37,6 +38,7 @@ export class QuestionnaireEntryListComponent implements OnInit {
 
   constructor(
     private userService: UserService,
+    private commandService: CommandService,
     private activeRoute: ActivatedRoute,
     private router: Router,
     private http: HttpClient,
@@ -55,13 +57,18 @@ export class QuestionnaireEntryListComponent implements OnInit {
     this.activeRoute.params.subscribe((data: Params) => {
       if (data.id !== undefined) { // 编辑
         this.questionnaireId = parseInt(data.id, 10);
-        this.getEntries();
+        setTimeout(() => {
+          this.getEntries();
+          this.commandService.setMessage(3); // 显示
+        }, 100);
+        
       }
     });
   }
 
   getEntries() {
     this.showProgress = true;
+    this.commandService.setMessage(1);
     const temp = this.queryForm.value;
     temp.offset = this.query.offset;
     temp.limit = this.query.limit;
@@ -126,11 +133,16 @@ export class QuestionnaireEntryListComponent implements OnInit {
           }
           // console.log(result);
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => {this.getEntries(); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; },
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.getEntries(); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
 
     );
   }

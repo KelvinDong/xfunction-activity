@@ -4,6 +4,7 @@ import { baseConfig, urlDefine } from 'src/app/ts/base-config';
 import { Router, ActivatedRoute } from '@angular/router';
 import { from } from 'rxjs';
 import { getAndSavePath } from 'src/app/ts/base-utils';
+import { CommandService } from 'src/app/user/command.service';
 
 interface Form {
   formId: number;
@@ -31,6 +32,7 @@ export class FormListComponent implements OnInit {
 
   constructor(
     private userService: UserService,
+    private commandService: CommandService,
     private activeRoute: ActivatedRoute,
     private router: Router
   ) { 
@@ -39,11 +41,16 @@ export class FormListComponent implements OnInit {
   ngOnInit() {
     // 不登录的情况下可以返回此
     getAndSavePath(this.activeRoute);
-    this.getForms();
+    setTimeout(() => {
+      this.getForms();
+      this.commandService.setMessage(3);
+    }, 100);
+    
   }
 
   getForms() {
     this.showProgress = true;
+    this.commandService.setMessage(1);
     this.userService.post(baseConfig.formMyList, this.query).subscribe(
       (data: Result) => {
         const result = { ...data };
@@ -57,11 +64,16 @@ export class FormListComponent implements OnInit {
             this.query = { offset: this.query.offset + this.query.limit, limit: this.query.limit };
           }
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => {this.getForms(); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; }
+      (error: Result) => {
+        this.userService.showError1(error, () => { this.getForms(); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      }
     );
   }
 

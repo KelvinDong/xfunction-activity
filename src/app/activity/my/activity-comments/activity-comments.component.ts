@@ -7,6 +7,8 @@ import { getAndSavePath, convertDateFromString } from 'src/app/ts/base-utils';
 import { baseConfig, urlDefine } from 'src/app/ts/base-config';
 import { ActivityCommentsBottomComponent } from './activity-comments-bottom/activity-comments-bottom.component';
 import { ActivityCommentsReplyComponent } from './activity-comments-reply/activity-comments-reply.component';
+import { environment } from 'src/environments/environment';
+import { CommandService } from 'src/app/user/command.service';
 
 @Component({
   selector: 'app-activity-comments',
@@ -29,11 +31,12 @@ export class ActivityCommentsComponent implements OnInit {
   faClock = faClock;
   faCommentSlash = faCommentSlash;
 
+  baseUrl = environment.media + '/activity/images';
 
   constructor(
     private userService: UserService,
     private router: Router,
-
+    private commandService: CommandService,
     public snackBar: MatSnackBar,
 
     public dialog: MatDialog,
@@ -43,11 +46,16 @@ export class ActivityCommentsComponent implements OnInit {
 
   ngOnInit() {
     getAndSavePath(this.activeRoute);
-    this.getComments();
+    setTimeout(() => {
+      this.getComments();
+      this.commandService.setMessage(3);
+    }, 100);
+    
   }
 
   getComments() {
     this.showProgress = true;
+    this.commandService.setMessage(1);
     this.userService.post(baseConfig.activityComments, this.query).subscribe(
       (data: Result) => {
         const result = { ...data };
@@ -64,11 +72,16 @@ export class ActivityCommentsComponent implements OnInit {
             this.query = { offset: this.query.offset + this.query.limit, limit: this.query.limit };
           }
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => { this.getComments(); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; }
+      (error: Result) => {
+        this.userService.showError1(error, () => { this.getComments(); }); 
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      }
     );
   }
 
@@ -91,19 +104,7 @@ export class ActivityCommentsComponent implements OnInit {
     bottomSheetRef.afterDismissed().subscribe(() => {
       switch (bottomSheetRef.instance.operType) {
         case 1:
-          this.showProgress = true;
-          this.userService.post(baseConfig.activityCommentDel, { commentId: comment.commentId }).subscribe(
-            (data: Result) => {
-              const result = { ...data };
-              if (result.success) {
-                comment.commentDel = true;
-              } else {
-                this.userService.showError(result);
-              }
-              this.showProgress = false;
-            },
-            (error: Result) => { this.userService.showError(error); this.showProgress = false; }
-          );
+          this.delComment(comment);
           break;
         case 2:
           this.router.navigate([urlDefine.publicActivity, comment.activity.activityId]);
@@ -117,6 +118,28 @@ export class ActivityCommentsComponent implements OnInit {
     });
   }
 
+  delComment(comment: any) {
+    this.showProgress = true;
+    this.commandService.setMessage(1);
+    this.userService.post(baseConfig.activityCommentDel, { commentId: comment.commentId }).subscribe(
+      (data: Result) => {
+        const result = { ...data };
+        if (result.success) {
+          comment.commentDel = true;
+        } else {
+          this.userService.showError1(result, () => { this.delComment(comment); });
+        }
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
+      (error: Result) => {
+        this.userService.showError1(error, () => { this.delComment(comment); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      }
+    );
+  }
+
   showReplyComment(comment: any) {
     const dialogRef = this.dialog.open(ActivityCommentsReplyComponent, {
       // height: '400px',
@@ -125,23 +148,32 @@ export class ActivityCommentsComponent implements OnInit {
     });
     dialogRef.afterClosed().subscribe((resultData: string) => {
       if (resultData) {
-        this.showProgress = true;
-        this.userService.post(baseConfig.activityCommentReplay, { commentId: comment.commentId, commentReply: resultData }).subscribe(
-          (data: Result) => {
-            const result = { ...data };
-            if (result.success) {
-              this.snackBar.open('发布成功', '', { duration: 5000 });
-              comment.commentReply = resultData;
-            } else {
-              this.userService.showError(result);
-            }
-            this.showProgress = false;
-          },
-          (error: Result) => { this.userService.showError(error); this.showProgress = false; },
-        );
-
+        this.replyComment(comment, resultData);
       }
     });
+  }
+
+  replyComment(comment, resultData) {
+    this.showProgress = true;
+    this.commandService.setMessage(1);
+    this.userService.post(baseConfig.activityCommentReplay, { commentId: comment.commentId, commentReply: resultData }).subscribe(
+      (data: Result) => {
+        const result = { ...data };
+        if (result.success) {
+          this.snackBar.open('发布成功', '', { duration: 5000 });
+          comment.commentReply = resultData;
+        } else {
+          this.userService.showError1(result, () => {this.replyComment(comment, resultData); } );
+        }
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
+      (error: Result) => {
+        this.userService.showError1(error, () => { this.replyComment(comment, resultData); } );
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
+    );
   }
 
 }

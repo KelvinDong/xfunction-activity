@@ -12,6 +12,7 @@ import { EntryListBottomComponent } from './entry-list-bottom/entry-list-bottom.
 import { convertDateFromString, getAndSavePath } from 'src/app/ts/base-utils';
 import { Region } from 'src/app/ts/region';
 import { EntryListDialogComponent } from './entry-list-dialog/entry-list-dialog.component';
+import { CommandService } from 'src/app/user/command.service';
 
 @Component({
   selector: 'app-entry-list',
@@ -47,6 +48,7 @@ export class EntryListComponent implements OnInit {
 
   constructor(
     private userService: UserService,
+    private commandService: CommandService,
     private router: Router,
     private region: Region,
     public dialog: MatDialog,
@@ -62,7 +64,11 @@ export class EntryListComponent implements OnInit {
     window.onresize = () => {
       this.resetWindow();
     };
-    this.getMyEntries();
+    setTimeout(() => {
+      this.getMyEntries();
+      this.commandService.setMessage(3);
+    }, 100);
+    
   }
 
   resetWindow() {
@@ -98,11 +104,11 @@ export class EntryListComponent implements OnInit {
             this.query = { offset: this.query.offset + this.query.limit, limit: this.query.limit };
           }
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => { this.getMyEntries(); });
         }
         this.showProgress = false;
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; }
+      (error: Result) => { this.userService.showError1(error, () => { this.getMyEntries(); }); this.showProgress = false; }
     );
   }
 
@@ -163,11 +169,11 @@ export class EntryListComponent implements OnInit {
         if (result.success) {
           entry.cancel = 'Cancel';
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => {this.cancelEntry(entry); });
         }
         this.showProgress = false;
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; }
+      (error: Result) => { this.userService.showError1(error, () => {this.cancelEntry(entry); }); this.showProgress = false; }
     );
   }
 

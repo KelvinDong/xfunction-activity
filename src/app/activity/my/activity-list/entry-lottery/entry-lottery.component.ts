@@ -12,6 +12,7 @@ import { ColorPickerControl } from '@iplab/ngx-color-picker';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { environment } from 'src/environments/environment';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { CommandService } from 'src/app/user/command.service';
 
 @Component({
   selector: 'app-entry-lottery',
@@ -39,7 +40,7 @@ export class EntryLotteryComponent implements OnInit {
   screenX = window.screen.width;
   screenY = window.screen.height;
   showProgress = false;
-  title = '活动抽奖';
+
   query: PageQuery = { offset: 0, limit: 10 };
   toEnd = false;
 
@@ -127,13 +128,32 @@ export class EntryLotteryComponent implements OnInit {
 
   isChrome = false;
 
+  warm = new Audio(environment.media + '/activity/audio/633353257.mp3');
+  done = new Audio(environment.media + '/activity/audio/12316.wav');
+
   toggle() {
+    this.done.play();
     this.isOpen = !this.isOpen;
+  }
+
+  muteDone(e: any) {
+    if (e) {
+      this.done.muted = e.target.checked;
+      this.warm.muted = e.target.checked;
+    }
+  }
+
+  addMusic(event: any) {
+    const file = event.target.files[0];
+    const url = window.URL.createObjectURL(file);
+    this.warm.src = url;
+    this.warm.play();
   }
 
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
+    private commandService: CommandService,
     private el: ElementRef,
     private sanitizer: DomSanitizer,
     private http: HttpClient,
@@ -150,6 +170,8 @@ export class EntryLotteryComponent implements OnInit {
 
     this.isChrome = isExplorer('chrome');
 
+    this.warm.loop = true;
+
     this.backImg = 'url(/assets/images/lottery.jpg)';
     this.backImg = this.sanitizer.bypassSecurityTrustStyle(this.backImg);
 
@@ -160,59 +182,71 @@ export class EntryLotteryComponent implements OnInit {
     this.activeRoute.params.subscribe((data: Params) => {
       if (data.id !== undefined) { // 编辑
         this.activityId = parseInt(data.id, 10);
-        this.showProgress = true;
-        // 送服务器
-        this.userService.post(this.activityId === 1 ?
-          baseConfig.activityMyLotterySettingsGetDemo : baseConfig.activityMyLotterySettingsGet, {
-          activityId: this.activityId,
-        }).subscribe(
-          (data: Result) => {
-            const result = { ...data };
-            if (result.success) {
-              // console.log(result.data.settings);
-              if (result.data.settings) {
-                this.settings = JSON.parse(result.data.settings);
-                this.format = this.settings.format;
-                if (this.format.back && this.format.back !== 'null') {
-                  this.backImg = 'url(' + environment.media + '/activity/images' + this.format.back + ') ';
-                } else {
-                  this.backImg = 'url(/assets/images/lottery.jpg)';
-                }
-                this.backImg = this.sanitizer.bypassSecurityTrustStyle(this.backImg);
-                // 初始化控件
-                for (let i = 1; i < this.settings.turnNames.length; i++) {
-                  this.addTurn(null);
-                }
-                this.settingForm.patchValue(this.settings);
-
-                // 加载抽奖记录
-                this.getResults();
-
-              } else if (result.data.activityTitle) {
-                this.settingForm.patchValue({ title: result.data.activityTitle });
-              }
-
-            } else {
-              this.userService.showError(result);
-            }
-            this.showProgress = false;
-          },
-          (error: Result) => { this.userService.showError(error); this.showProgress = false; },
-        );
-
+        setTimeout(() => {
+          this.getSetting();
+          this.commandService.setMessage(3);
+        }, 100);
+        
       } else {
         this.snackBar.open('参数错误', '', { duration: 3000 });
       }
     });
+  }
 
-    this.listTickets();
+  getSetting() {
+    this.showProgress = true;
+    this.commandService.setMessage(1);
+    // 送服务器
+    this.userService.post(this.activityId === 1 ?
+      baseConfig.activityMyLotterySettingsGetDemo : baseConfig.activityMyLotterySettingsGet, {
+      activityId: this.activityId,
+    }).subscribe(
+      (data: Result) => {
+        const result = { ...data };
+        if (result.success) {
+          // console.log(result.data.settings);
+          if (result.data.settings) {
+            this.settings = JSON.parse(result.data.settings);
+            this.format = this.settings.format;
+            if (this.format.back && this.format.back !== 'null') {
+              this.backImg = 'url(' + environment.media + '/activity/images' + this.format.back + ') ';
+            } else {
+              this.backImg = 'url(/assets/images/lottery.jpg)';
+            }
+            this.backImg = this.sanitizer.bypassSecurityTrustStyle(this.backImg);
+            // 初始化控件
+            for (let i = 1; i < this.settings.turnNames.length; i++) {
+              this.addTurn(null);
+            }
+            this.settingForm.patchValue(this.settings);
 
+            // 加载抽奖记录
+            this.getResults();
+            this.listTickets();
+
+          } else if (result.data.activityTitle) {
+            this.settingForm.patchValue({ title: result.data.activityTitle });
+          }
+
+        } else {
+          this.userService.showError1(result, () => { this.getSetting(); });
+        }
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.getSetting(); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
+    );
   }
 
   listTickets() {
     // console.log('list.....');
     this.tickets = [];
     this.showProgress = true;
+    this.commandService.setMessage(1);
     this.userService.post(this.activityId === 1 ?
       baseConfig.ticketMyListDemo : baseConfig.ticketMyList, { activityId: this.activityId }).subscribe(
       (data: Result) => {
@@ -223,11 +257,15 @@ export class EntryLotteryComponent implements OnInit {
           });
           // this.tickets.splice(0, 1); // 删除第一第系统票种
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => {this.listTickets(); });
         }
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; },
-      () => { this.showProgress = false; }
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.listTickets(); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
+      () => { this.showProgress = false; this.commandService.setMessage(0);}
     );
 
   }
@@ -257,6 +295,7 @@ export class EntryLotteryComponent implements OnInit {
 
   getResults() {
     this.showProgress = true;
+    this.commandService.setMessage(1);
     this.userService.post(this.activityId === 1 ? baseConfig.activityMyLotteryResultGetDemo : baseConfig.activityMyLotteryResultGet, {
       activityId: this.activityId,
       offset: this.query.offset,
@@ -274,11 +313,15 @@ export class EntryLotteryComponent implements OnInit {
             this.query = { offset: this.query.offset + this.query.limit, limit: this.query.limit };
           }
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => {this.getResults(); });
         }
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; },
-      () => { this.showProgress = false; }
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.getResults(); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
+      () => { this.showProgress = false; this.commandService.setMessage(0); }
     );
   }
 
@@ -346,6 +389,7 @@ export class EntryLotteryComponent implements OnInit {
     this.settings = this.settingForm.value;
     this.settings.format = this.format;
     this.showProgress = true;
+    this.commandService.setMessage(1);
     // 送服务器
     this.userService.post(this.activityId === 1 ? baseConfig.activityMyLotterySettingsDemo : baseConfig.activityMyLotterySettings, {
       activityId: this.activityId,
@@ -356,11 +400,16 @@ export class EntryLotteryComponent implements OnInit {
         if (result.success) {
           this.snackBar.open('设置保存成功', '', { duration: 3000 });
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => {this.formSubmit(); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; },
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.formSubmit(); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
     );
   }
 
@@ -373,16 +422,18 @@ export class EntryLotteryComponent implements OnInit {
   start() {
     // 开始抽奖了
     // 首先获得所有用户数据
+    this.commandService.setMessage(2);
     this.formatEditing = false;
     this.settings = this.settingForm.value;
     this.getEntries();
     this.formSubmit();
-    
+    this.warm.play();
   }
 
   edit() {
     // 开始抽奖了
     // 首先获得所有用户数据
+    this.commandService.setMessage(2);
     this.formatEditing = true;
     this.cellBorderTypeControl.setValue(this.format.cellBorderStyle);
     this.settings = this.settingForm.value;
@@ -401,13 +452,14 @@ export class EntryLotteryComponent implements OnInit {
     this.stepResult = [];
     this.nextStep(); // 开始第一步
 
+    this.warm.play();
     this.formSubmit();
     
   }
 
   getEntries() {   // inCancle  inUnSign  
     this.showProgress = true;
-
+    this.commandService.setMessage(1);
     // 送服务器
     this.userService.post(this.activityId === 1 ? baseConfig.activityMyLotteryEntriesDemo : baseConfig.activityMyLotteryEntries, {
       activityId: this.activityId,
@@ -422,20 +474,27 @@ export class EntryLotteryComponent implements OnInit {
           if (this.entries.length === 0){
             this.snackBar.open('参与名单总数为0，无法抽奖！', '', { duration: 3000 });
             this.showProgress = false;
+            this.commandService.setMessage(0);
             return;
           }
           this.stepResult = [];
           this.nextStep(); // 开始第一步
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => {this.getEntries(); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; },
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.getEntries(); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
     );
   }
 
   returnSettings() {
+    this.commandService.setMessage(3);
     this.step = 0;
     this.stepRunning = false;
     if (document.exitFullscreen) {
@@ -443,6 +502,7 @@ export class EntryLotteryComponent implements OnInit {
     }
     // 重新刷新历史记录
     this.resetResult();
+    this.warm.pause();
   }
 
   headPic(event: any) {
@@ -463,7 +523,8 @@ export class EntryLotteryComponent implements OnInit {
     postData.append('funType', '3');
     postData.append('activityId', that.activityId.toString());
     that.showProgress = true;
-    that.userService.postFormData(this.activityId === 1 ? baseConfig.activityUpPicDemo : baseConfig.activityUpPic, postData).subscribe(
+    that.commandService.setMessage(1);
+    that.userService.postFormData(that.activityId === 1 ? baseConfig.activityUpPicDemo : baseConfig.activityUpPic, postData).subscribe(
       (data: Result) => {
         const result = { ...data };
         if (result.success) {
@@ -471,11 +532,16 @@ export class EntryLotteryComponent implements OnInit {
           that.backImg = 'url(' + environment.media + '/activity/images' + result.data + ')';
           that.backImg = that.sanitizer.bypassSecurityTrustStyle(that.backImg);
         } else {
-          that.userService.showError(result);
+          that.userService.showError1(result, () => {that.upHeadPic(bob, that); });
         }
         that.showProgress = false;
+        that.commandService.setMessage(0);
       },
-      (error: Result) => { that.userService.showError(error); that.showProgress = false; }
+      (error: Result) => {
+        that.userService.showError1(error, () => {that.upHeadPic(bob, that); });
+        that.showProgress = false;
+        that.commandService.setMessage(0);
+      }
     );
   }
 
@@ -666,6 +732,7 @@ export class EntryLotteryComponent implements OnInit {
   private saveToServer() {
 
     this.showProgress = true;
+    this.commandService.setMessage(1);
     // 送服务器
     this.userService.post(this.activityId === 1 ? baseConfig.activityMyLotteryResultSaveDemo : baseConfig.activityMyLotteryResultSave, {
       activityId: this.activityId,
@@ -677,11 +744,16 @@ export class EntryLotteryComponent implements OnInit {
         if (result.success) {
           // this.snackBar.open('设置保存成功', '', { duration: 3000 });
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => { this.saveToServer();});
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; },
+      (error: Result) => {
+        this.userService.showError1(error, () => { this.saveToServer(); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
     );
   }
 

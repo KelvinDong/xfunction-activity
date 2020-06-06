@@ -1,33 +1,33 @@
-<app-master-head [title]="title" [showProgress]="showProgress"
-    style="position: fixed; top: 0; width:100% ;z-index: 100 "></app-master-head>
-<mat-toolbar color="primary" style="position: fixed; top: 56px; width:100% ;font-size: 14px;z-index: 100 ">
-    <span>{{ total ?  '总数:' + total : ''}}</span>
-    <span style="flex: 1 1 auto;"></span>
-    <form [formGroup]="queryForm">
-        <mat-form-field floatLabel="never" style="width:120px; ">
-            <input matInput placeholder="输入条件" formControlName="queryStr">
-        </mat-form-field>
-        <button mat-icon-button (click)="queryChange()" [disabled]="showProgress">
-            <fa-icon [icon]="faSearch" size="lg"></fa-icon>
-        </button>
-        <button mat-button (click)="dl()" >
-            下载
-        </button>
-    </form>
-</mat-toolbar>
+<div style="width: 100%;overflow-y: scroll; ">
+    <mat-toolbar class="search-toolbar">
+        <span>{{ total ?  '总数:' + total : ''}}</span>
+        <span style="flex: 1 1 auto;"></span>
+        <form [formGroup]="queryForm">
+            <mat-form-field floatLabel="never" style="width:120px; ">
+                <input matInput placeholder="输入条件" formControlName="queryStr">
+            </mat-form-field>
+            <button mat-icon-button (click)="queryChange()" [disabled]="showProgress">
+                <fa-icon [icon]="faSearch" size="lg"></fa-icon>
+            </button>
+            <button mat-button (click)="dl()" >
+                下载
+            </button>
+        </form>
+    </mat-toolbar>
+</div>
+<div class="my-body-parent-top" style="height: calc( 100% - 70px - 64px );overflow-y: scroll " (scroll)="scrollBottom($event)">
+    <div class="my-body" style="border: 0px solid red" >
+        <mat-accordion>
+            <mat-expansion-panel *ngFor="let entry of entries" style="margin:0px 0px">
+                <mat-expansion-panel-header>
+                    <div style="display: flex; align-items: center; width: 100%; font-size: 14px;" class="my-right-left-10">
+                        <span class="my-right-left-10">{{entry.entryShowName}}</span>
+                        <span class="my-right-left-10">{{entry.entryCreate | myDate:'MM-dd HH:mm'}}</span>
+                    </div>
+                </mat-expansion-panel-header>
+                <p *ngFor="let answer of entry.entryContentTrans , let i = index"> {{i+1}}、{{answer.q}} : {{answer.a}}</p>
+            </mat-expansion-panel>
+        </mat-accordion>
 
-<div class="my-body" style="border: 0px solid red" (scroll)="scrollBottom($event)">
-    <div style="height: 112px"></div>
-    <mat-accordion>
-        <mat-expansion-panel *ngFor="let entry of entries" style="margin:0px 0px">
-            <mat-expansion-panel-header>
-                <div style="display: flex; align-items: center; width: 100%; font-size: 14px;" class="my-right-left-10">
-                    <span class="my-right-left-10">{{entry.entryShowName}}</span>
-                    <span class="my-right-left-10">{{entry.entryCreate | myDate:'MM-dd HH:mm'}}</span>
-                </div>
-            </mat-expansion-panel-header>
-            <p *ngFor="let answer of entry.entryContentTrans , let i = index"> {{i+1}}、{{answer.q}} : {{answer.a}}</p>
-        </mat-expansion-panel>
-    </mat-accordion>
-
+    </div>
 </div>

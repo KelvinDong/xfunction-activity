@@ -7,6 +7,8 @@ import { RouterModule } from '@angular/router';
 
 import { AboutDialogComponent } from './user/about-dialog/about-dialog.component';
 
+import { LoginDialogComponent } from './define/login-dialog/login-dialog.component';
+
 import { ReactiveFormsModule } from '@angular/forms';
 import {DragDropModule} from '@angular/cdk/drag-drop';
 import {ScrollingModule} from '@angular/cdk/scrolling';
@@ -52,17 +54,22 @@ import {
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { QRCodeModule } from 'angularx-qrcode';
 import { HttpClientModule } from '@angular/common/http';
+import { ImageCropperModule } from 'ngx-image-cropper';
 
 import { MyDatePipe } from './pipe/my-date.pipe';
 
 import { SlideControlComponent } from './define/slide-control/slide-control.component';
 import { MasterHeadComponent } from './define/master-head/master-head.component';
 
+import { ImageCropComponent} from './define/image-crop/image-crop.component';
+
 import { ControlComponentComponent } from './define/dynamic-form/control-component/control-component.component';
 import { DynamicFormComponent } from './define/dynamic-form/dynamic-form/dynamic-form.component';
 import { ColorWrapperComponent } from './define/color-wrapper/color-wrapper.component';
 import { ColorPickerModule } from '@iplab/ngx-color-picker';
 import { MyTimingPipe } from './pipe/my-timing.pipe';
+import { NgMaterialMultilevelMenuComponent } from './define/left-menu/ng-material-multilevel-menu.component';
+import { ListItemComponent } from './define/left-menu/list-item/list-item.component';
 
 
 
@@ -74,13 +81,18 @@ import { MyTimingPipe } from './pipe/my-timing.pipe';
     ControlComponentComponent,
     DynamicFormComponent,
     AboutDialogComponent,
+    LoginDialogComponent,
     ColorWrapperComponent,
     MyDatePipe,
     MyTimingPipe,
+    ImageCropComponent, // 自定义dialog
+    NgMaterialMultilevelMenuComponent, 
+    ListItemComponent
   ],
   imports: [
     CommonModule,
     RouterModule,
+    ImageCropperModule,
     // BrowserAnimationsModule,
     ReactiveFormsModule,
     CdkTableModule,
@@ -130,6 +142,8 @@ import { MyTimingPipe } from './pipe/my-timing.pipe';
   ],
   entryComponents: [
     AboutDialogComponent,
+    LoginDialogComponent,
+    ImageCropComponent, // 自定义dialog
   ],
   exports: [
     SlideControlComponent,
@@ -137,7 +151,10 @@ import { MyTimingPipe } from './pipe/my-timing.pipe';
     ControlComponentComponent,
     DynamicFormComponent,
     AboutDialogComponent,
+    LoginDialogComponent,
     ColorWrapperComponent,
+    ImageCropComponent, // 自定义dialog
+    NgMaterialMultilevelMenuComponent,
 
     ReactiveFormsModule,
     CdkTableModule,

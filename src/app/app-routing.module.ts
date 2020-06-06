@@ -3,13 +3,11 @@ import { NgModule, Component } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { urlDefine, baseConfig, lsDefine} from './ts/base-config';
 
-
-
-
 import { TeeestComponent } from './teeest/teeest.component';
+import { SidebarComponent } from './learn/sidebar/sidebar.component';
 
 const routes: Routes = [
-  { path: 'test', component: TeeestComponent},
+  { path: 'test', component: SidebarComponent},
   { path: '' , redirectTo: urlDefine.indexUrl, pathMatch: `full`},
   
   {path: 'user', loadChildren: './user/user.module#UserModule'},

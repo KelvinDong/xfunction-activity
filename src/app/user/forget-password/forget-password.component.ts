@@ -62,13 +62,13 @@ export class ForgetPasswordComponent implements OnInit {
           this.stepper.next();
           this.snackBar.open('验证码短信已经发送，请查收', '', { duration: 5000 });
         } else {
-          this.userService.showError(result);
+          // this.userService.showError(result);
           this.reset();
         }
         this.showProgress = false;
       },
       (error: Result) => {
-        this.userService.showError(error);
+        // this.userService.showError(error);
         this.showProgress = false;
         this.reset();
       }
@@ -102,13 +102,13 @@ export class ForgetPasswordComponent implements OnInit {
           this.snackBar.open('修改成功', '', { duration: 5000 });
           this.router.navigateByUrl(urlDefine.loginUrl);
         } else {
-          this.userService.showError(result);
+          // this.userService.showError(result);
           this.reset();
         }
         this.showProgress = false;
       },
       (error: Result) => {
-        this.userService.showError(error);
+        // this.userService.showError(error);
         this.showProgress = false;
         this.reset();
       }

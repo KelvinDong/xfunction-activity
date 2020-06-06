@@ -1,0 +1,40 @@
+<div class="main-container" [class.main-is-mobile]="mobileQuery.matches" >
+  
+    <mat-sidenav-container class="main-sidenav-container"
+                           >
+      <mat-sidenav #snav [mode]="mobileQuery.matches ? 'over' : 'side'" [opened]="!mobileQuery.matches && navShow" >
+        <div class="logo-wrapper">
+          <a href="#"><img src="https://media.xfunction.cn/web/images/trans-black-full-logo.png" ></a>
+        </div>
+        <ng-material-multilevel-menu style="font-size: 0.8rem;"
+          [configuration]='config' 
+          [items]='appitems' 
+          (selectedItem)="selectedItem($event)"
+          (selectedLabel)="selectedLabel($event)"
+        ></ng-material-multilevel-menu>
+        <div style="position: absolute; bottom: 0;width: 100%; text-align: center;">
+          <a mat-button href="http://www.beian.miit.gov.cn/">沪ICP备19021195号-1</a> 
+        </div>
+      </mat-sidenav>
+      <mat-sidenav-content>        
+        <mat-toolbar color="primary" class="main-toolbar" *ngIf="navShow" [style.left.px]="mobileQuery.matches ? 0 : 240">
+            <button *ngIf="mobileQuery.matches" mat-icon-button (click)="snav.toggle()"><mat-icon>menu</mat-icon></button>
+            <span class="fill-remaining-space"></span>
+            <ng-container *ngIf="userToken ; then thenNameTemplate; else elseNameTemplate"></ng-container>
+            <ng-template #thenNameTemplate>                
+                <img class="my-circle-avatar" [src]="baseUrl + userAvatar" style="margin-right: 16px;"  [matMenuTriggerFor]="settingsMenu"
+                                    onerror="this.src='assets/images/default-head.png'" title="用户头像">
+                <mat-menu #settingsMenu="matMenu">
+                    <button mat-menu-item [routerLink]="['/'+urlDefine.myUrl]">基本信息</button>
+                    <button mat-menu-item (click)="logout()">退出</button>
+                </mat-menu>
+            </ng-template>
+            <ng-template #elseNameTemplate>
+                <button mat-button (click)="login()" class="my-right-left-16"><i class="fas fa-user"></i> 登录 </button>
+            </ng-template>
+        </mat-toolbar>
+        <mat-progress-bar *ngIf="progressShow" style="position:fixed; top: 0px;z-index: 1;" mode="indeterminate" class="full-width" ></mat-progress-bar>
+        <router-outlet></router-outlet>
+      </mat-sidenav-content>
+    </mat-sidenav-container>
+  </div>

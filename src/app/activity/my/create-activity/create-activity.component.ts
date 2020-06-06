@@ -38,6 +38,7 @@ const Delta = Quill.imports.delta;
 
 
 import * as _moment from 'moment';
+import { CommandService } from 'src/app/user/command.service';
 // tslint:disable-next-line:no-duplicate-imports
 // import {default as _rollupMoment} from 'moment';
 // const moment = _rollupMoment || _moment;
@@ -162,7 +163,8 @@ export class CreateActivityComponent implements OnInit {
     private el: ElementRef,
     public snackBar: MatSnackBar,
     private region: Region,
-    private userService: UserService
+    private userService: UserService,
+    private commandService: CommandService,
   ) { }
 
   ngOnInit() {
@@ -198,64 +200,85 @@ export class CreateActivityComponent implements OnInit {
     this.cities = [];
     this.tags = [];
 
-    // 获取 报名模板
+    // 获取 报名模板,再获取或修改的内容
+    setTimeout(() => {
+      this.commandService.setMessage(3);
+      this.showProgress = true;
+      this.commandService.setMessage(1);
+      this.userService.post(baseConfig.formMyList, { offset: 0, limit: 100 }).subscribe(
+        (data: Result) => {
+          const result = { ...data };
+          if (result.success) {
+            this.forms = result.data;
+            // 从服务器获得已经保存，提供编辑
+            this.activeRoute.params.subscribe((data: Params) => {
+              if (data.id !== undefined) { // 编辑
+                setTimeout(() => {
+                  this.getActivity(data);
+                }, 100);
+              }
+            });
+          } else {
+            this.userService.showError1(result, () => { this.ngOnInit(); });
+          }
+          this.showProgress = false;
+          this.commandService.setMessage(0);
+        },
+        (error: Result) => {
+          this.userService.showError1(error, () => {this.ngOnInit(); });
+          this.showProgress = false;
+          this.commandService.setMessage(0);
+        }
+      );
+      }, 100);
+
+  }
+
+  getActivity( data ){
     this.showProgress = true;
-    this.userService.post(baseConfig.formMyList, { offset: 0, limit: 100 }).subscribe(
+    this.commandService.setMessage(1);
+    this.userService.post(baseConfig.activityMyGet, { activityId: parseInt(data.id, 10) }).subscribe(
       (data: Result) => {
         const result = { ...data };
         if (result.success) {
-          this.forms = result.data;
+          this.activity = result.data;
+
+          this.activity.province = this.activity.activityArea.substr(0, 2) + '0000';
+          this.cities = this.region.getCity(this.activity.province);
+
+          let datatime = this.activity.activityStart.split(' ');
+          this.activity.activityStartDate = moment(datatime[0]);
+          this.activity.activityStartTime = datatime[1];
+
+          datatime = this.activity.activityEnd.split(' ');
+          this.activity.activityEndDate = moment(datatime[0]);
+          this.activity.activityEndTime = datatime[1];
+
+          datatime = this.activity.entryEnd.split(' ');
+          this.activity.entryEndDate = moment(datatime[0]);
+          this.activity.entryEndTime = datatime[1];
+
+
+          this.firstFormGroup.patchValue(this.activity);
+          this.secondFormGroup.patchValue(this.activity);
+          this.activityContent = this.activity.activityContent;
+
+          this.tags = this.activity.activityTags.split(',');
+          this.headPicSrc = environment.media + '/activity/images' + this.activity.activityPic;
+          setTimeout(() => {
+            this.listTickets();
+          }, 100);
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => {this.ngOnInit()});
         }
-        this.showProgress = false;
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; }
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.ngOnInit(); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
+      () => { this.showProgress = false; this.commandService.setMessage(0);}
     );
-
-    // 从服务器获得已经保存，提供编辑
-    this.activeRoute.params.subscribe((data: Params) => {
-      if (data.id !== undefined) { // 编辑
-        this.showProgress = true;
-        this.userService.post(baseConfig.activityMyGet, { activityId: parseInt(data.id, 10) }).subscribe(
-          (data: Result) => {
-            const result = { ...data };
-            if (result.success) {
-              this.activity = result.data;
-
-              this.activity.province = this.activity.activityArea.substr(0, 2) + '0000';
-              this.cities = this.region.getCity(this.activity.province);
-
-              let datatime = this.activity.activityStart.split(' ');
-              this.activity.activityStartDate = moment(datatime[0]);
-              this.activity.activityStartTime = datatime[1];
-
-              datatime = this.activity.activityEnd.split(' ');
-              this.activity.activityEndDate = moment(datatime[0]);
-              this.activity.activityEndTime = datatime[1];
-
-              datatime = this.activity.entryEnd.split(' ');
-              this.activity.entryEndDate = moment(datatime[0]);
-              this.activity.entryEndTime = datatime[1];
-
-
-              this.firstFormGroup.patchValue(this.activity);
-              this.secondFormGroup.patchValue(this.activity);
-              this.activityContent = this.activity.activityContent;
-
-              this.tags = this.activity.activityTags.split(',');
-              this.headPicSrc = environment.media + '/activity/images' + this.activity.activityPic;
-              this.listTickets();
-            } else {
-              this.userService.showError(result);
-            }
-          },
-          (error: Result) => { this.userService.showError(error); this.showProgress = false; },
-          () => { this.showProgress = false; }
-        );
-      }
-    });
-
   }
 
   resetWindow() {
@@ -270,6 +293,7 @@ export class CreateActivityComponent implements OnInit {
   listTickets() {
     // console.log('list.....');
     this.tickets = [];
+    this.commandService.setMessage(1);
     this.showProgress = true;
     this.userService.post(baseConfig.ticketMyList, { activityId: parseInt(this.activity.activityId, 10) }).subscribe(
       (data: Result) => {
@@ -280,11 +304,15 @@ export class CreateActivityComponent implements OnInit {
           });
           this.tickets.splice(0, 1); // 删除第一第系统票种
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => {this.listTickets(); });
         }
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; },
-      () => { this.showProgress = false; }
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.listTickets(); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
+      () => { this.showProgress = false; this.commandService.setMessage(0);}
     );
 
   }
@@ -377,6 +405,7 @@ export class CreateActivityComponent implements OnInit {
 
 
     this.showProgress = true;
+    this.commandService.setMessage(1);
     this.userService.post(baseConfig.activityMyAddUpdate, resutlValue).subscribe(
       (data: Result) => {
         const result = { ...data };
@@ -387,11 +416,16 @@ export class CreateActivityComponent implements OnInit {
           this.stepper.next();
           this.initEditor();
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => {this.onFirstFormSubmit(); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; }
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.onFirstFormSubmit(); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      }
     );
 
 
@@ -416,6 +450,7 @@ export class CreateActivityComponent implements OnInit {
     // console.log(this.activity);
     // debugger;
     // postData.append('size', 'dd');
+    that.commandService.setMessage(1);
     that.showProgress = true;
     that.userService.postFormData(baseConfig.activityUpPic, postData).subscribe(
       (data: Result) => {
@@ -426,11 +461,16 @@ export class CreateActivityComponent implements OnInit {
           });
           that.headPicSrc = environment.media + '/activity/images' + result.data;
         } else {
-          that.userService.showError(result);
+          that.userService.showError1(result, () => { that.upHeadPic(bob, that); });
         }
         that.showProgress = false;
+        that.commandService.setMessage(0);
       },
-      (error: Result) => { that.userService.showError(error); that.showProgress = false; }
+      (error: Result) => {
+        that.userService.showError1(error, () => { that.upHeadPic(bob, that); });
+        that.showProgress = false;
+        that.commandService.setMessage(0);
+      }
     );
   }
 
@@ -474,19 +514,25 @@ export class CreateActivityComponent implements OnInit {
     postData.append('file', bob, 'up.jpg');
     postData.append('activityId', that.activity.activityId);
     that.showProgress = true;
+    that.commandService.setMessage(1);
     that.userService.postFormData(baseConfig.activityUpPic, postData).subscribe(
       (data: Result) => {
         const result = { ...data };
         that.showProgress = false;
+        that.commandService.setMessage(0);
         if (result.success) {
           const range = that.editor.getSelection(true);
           // const index = range.index + range.length;
           that.editor.insertEmbed(range.index, 'image', environment.media + '/activity/images' + result.data, 'user');
         } else {
-          that.userService.showError(result);
+          that.userService.showError1(result, () => { that.upImage(bob, that); });
         }
       },
-      (error: Result) => { that.userService.showError(error); that.showProgress = false; }
+      (error: Result) => {
+        that.userService.showError1(error, () => { that.upImage(bob, that); });
+        that.showProgress = false;
+        that.commandService.setMessage(0);
+      }
     );
   }
 
@@ -496,17 +542,23 @@ export class CreateActivityComponent implements OnInit {
     postData.activityContent = this.editorDom.querySelector('.ql-editor').innerHTML;
     postData.activityId = this.activity.activityId;
     this.showProgress = true;
+    this.commandService.setMessage(1);
     this.userService.post(baseConfig.activityMyAddUpdate, postData).subscribe(
       (data: Result) => {
         const result = { ...data };
         if (result.success) {
           this.stepper.next();
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => {this.onSecondFormSubmit(); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; }
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.onSecondFormSubmit();});
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      }
     );
 
   }
@@ -526,23 +578,32 @@ export class CreateActivityComponent implements OnInit {
         }
         result.activityId = this.activity.activityId;
         // 提交
-        this.showProgress = true;
-        this.userService.post(baseConfig.ticketMyAddUpdate, result).subscribe(
-          (data: Result) => {
-            const result = { ...data };
-            if (result.success) {
-              this.listTickets();
-            } else {
-              this.userService.showError(result);
-            }
-            this.showProgress = false;
-          },
-          (error: Result) => { this.userService.showError(error); this.showProgress = false; }
-        );
+        this.setTicket(result);
       }
     });
   }
 
+  setTicket(result){
+    this.showProgress = true;
+    this.commandService.setMessage(1);
+    this.userService.post(baseConfig.ticketMyAddUpdate, result).subscribe(
+      (data: Result) => {
+        const result = { ...data };
+        if (result.success) {
+          this.listTickets();
+        } else {
+          this.userService.showError1(result, () => {this.setTicket(result); });
+        }
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.setTicket(result); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      }
+    );
+  }
 
   showTicketBottom(ticket: Ticket, e: any) {
 
@@ -567,17 +628,23 @@ export class CreateActivityComponent implements OnInit {
 
     ticket.ticketStatus = !ticket.ticketStatus;
     this.showProgress = true;
+    this.commandService.setMessage(1);
     this.userService.post(baseConfig.ticketMyAddUpdate, ticket).subscribe(
       (data: Result) => {
         const result = { ...data };
         if (result.success) {
 
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => { this.slideChangr(ticket); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; }
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.slideChangr(ticket); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      }
     );
   }
 

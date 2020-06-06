@@ -70,11 +70,11 @@ export class EntryImportComponent implements OnInit {
         if (result.success) {
           this.dialogRef.close(true);
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => {this.import();});
         }
         this.showProgress = false;
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; }
+      (error: Result) => { this.userService.showError1(error, () => {this.import(); }); this.showProgress = false; }
     );
 
   }

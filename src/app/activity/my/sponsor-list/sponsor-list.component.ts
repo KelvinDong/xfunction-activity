@@ -10,6 +10,7 @@ import {
   faHeart,  faSquare, faCalendarAlt, faBookmark, faMapMarkerAlt, faCircle
 } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as farHeart } from '@fortawesome/free-regular-svg-icons';
+import { CommandService } from 'src/app/user/command.service';
 
 @Component({
   selector: 'app-sponsor-list',
@@ -42,6 +43,7 @@ export class SponsorListComponent implements OnInit {
   constructor(
     private el: ElementRef,
     private userService: UserService,
+    private commandService: CommandService,
     public snackBar: MatSnackBar,
     private router: Router,
     private activeRoute: ActivatedRoute,
@@ -52,11 +54,15 @@ export class SponsorListComponent implements OnInit {
     getAndSavePath(this.activeRoute);
 
     this.favSponsorGroup = [];
-    this.getSponsors();
+    setTimeout(() => {
+      this.getSponsors();
+      this.commandService.setMessage(3);
+    }, 100);
+    
   }
 
   getSponsors() {
-
+    this.commandService.setMessage(1);
     this.showProgress = true;
     this.userService.post(baseConfig.myFaviList, this.query).subscribe(
       (data: Result) => {
@@ -77,12 +83,17 @@ export class SponsorListComponent implements OnInit {
             this.query = { offset: this.query.offset + this.query.limit, limit: this.query.limit };
           }
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => { this.getSponsors(); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
         // console.log(this.activities);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; },
+      (error: Result) => {
+        this.userService.showError1(error, () => { this.getSponsors(); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
     );
   }
 
@@ -100,7 +111,7 @@ export class SponsorListComponent implements OnInit {
   }
 
   likeSponsor(event: any, sponsor: any) {
-
+    this.commandService.setMessage(1);
     this.showProgress = true;
     this.userService.post(baseConfig.toggleFavi, {sponsorId: sponsor.sponsorId}).subscribe(
       (data: Result) => {
@@ -118,11 +129,16 @@ export class SponsorListComponent implements OnInit {
           }
           window.localStorage.setItem('favList', this.favSponsorGroup.toString());
         } else {
-          this.userService.showError(result);
+          this.userService.showError1(result, () => { this.likeSponsor(event, sponsor); });
         }
         this.showProgress = false;
+        this.commandService.setMessage(0);
       },
-      (error: Result) => { this.userService.showError(error); this.showProgress = false; },
+      (error: Result) => {
+        this.userService.showError1(error, () => {this.likeSponsor(event, sponsor); });
+        this.showProgress = false;
+        this.commandService.setMessage(0);
+      },
     );
 
     event.stopPropagation();
