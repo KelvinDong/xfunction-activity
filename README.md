@@ -1,27 +1,65 @@
-# XfunctionActivity
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.3.5.
+> 短链接/短网址/短地址,实现将形如：htts://www.xfunction/shortLink/index.html的网址收缩成https://xfu.biz/zdfXs形态的网址。
 
-## Development server
+## 技术要点
+* 基本jquery,gulp打包。
+* 目录结构：
+  * html
+    * include  gulp打包时使用到的包含文件
+    * html
+      * index.html www.xfunction.cn的准静态页面。
+      * **shortLink**
+        * **index.html 短链接生成操作页面。**
+        * **redirect.html  访问短链接的跳转页面。**
+    * statics
+      * css
+      * font
+      * images
+      * js
+        * min
+          * clipboard.min.js 第三方拷贝
+          * jqColorPicker.min.js 第三方着色选择
+          * mdb.js https://mdbootstrap.com/templates/ 模板
+        * cropper.js
+        * jquery-cropper.js 第三方截图
+        * qrcode.js 第三方二维码生成
+        * xfunction.qrcode.js  再封闭的二维码生成
+        * global.js  配置等常用工具
+* web服务器配置
+  * 主域名www.xfunction.cn常规配置，不作特别说明。
+  * 短链接域名 xfu.biz的nginx配置如下
+  ```
+  server {
+        listen       443 ssl;
+        server_name  xfu.biz;
+        #ssl on;
+        ssl_certificate   cert/xfu.biz.pem;
+        ssl_certificate_key  cert/xfu.biz.key;
+        ssl_session_timeout 5m;
+        ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE:ECDH:AES:HIGH:!NULL:!aNULL:!MD5:!ADH:!RC4;
+        ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+        ssl_prefer_server_ciphers on;
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+        #charset koi8-r;
 
-## Code scaffolding
+        access_log  logs/xfu.access.log  main;
+        ## redirect 确保日志记录完整，否则 301 客户端记住了，就不来了
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+        location / {
+            root   /project/run/www;
+            index  index.html index.htm;
+            rewrite ^/(.+)$ https://www.xfunction.cn/html/shortLink/redirect.html?linkId=$1 redirect;
+        }
+  }
 
-## Build
+  ```
+ 
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+  ## [API应用服务在( xfunction-api )中的位置](https://github.com/KelvinDong/xfunction-api)
 
-## Running unit tests
+* modules/shortlink/* 短链接相关
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+ 
+ ![生成页面](https://acebridge2019.oss-cn-shanghai.aliyuncs.com/201910/x/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20200608150651.png)
+![生成结果](https://acebridge2019.oss-cn-shanghai.aliyuncs.com/201910/x/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20200608150830.png)
+![首页](https://acebridge2019.oss-cn-shanghai.aliyuncs.com/201910/x/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20200608150558.png)
