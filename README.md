@@ -37,6 +37,10 @@
 * modules/activity/* 
 * modules/user/*
 
+## DEMO
+
+[https://www.xfunction.cn/](https://www.xfunction.cn/activity/public/public-list)
+
  
 ![](https://acebridge2019.oss-cn-shanghai.aliyuncs.com/201910/x/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20200609102706.png)
 ![](https://acebridge2019.oss-cn-shanghai.aliyuncs.com/201910/x/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20200609102757.png)
