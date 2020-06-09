@@ -9,17 +9,13 @@ import { ShareModule } from './share.module';
 
 
 
-import { TeeestComponent } from './teeest/teeest.component';
-import { SidebarComponent } from './learn/sidebar/sidebar.component';
-
 
 
 @NgModule({
   declarations: [
     AppComponent,
 
-    TeeestComponent,
-    SidebarComponent,
+
 
   ],
   imports: [
