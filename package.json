@@ -39,7 +39,7 @@
     "quill-image-resize-module": "^3.0.0",
     "rxjs": "~6.4.0",
     "stats.js": "^0.17.0",
-    "three": "^0.109.0",
+    "three": "^0.125.0",
     "three-full": "^17.1.0",
     "tslib": "^1.10.0",
     "weixin-jsapi": "^1.1.0",
